@@ -1,0 +1,11 @@
+Indeksi 2011 project for analysing activity indices from ground reaction forces.
+
+Compile
+Read compileIndeksi2011.bat
+
+Use
+1. Klikkaa Calibartion file to Open (tai alt-c) -> valitse testi.csv ja paina OK
+2. Klikkaa WDQ file to Open (tai alt-w) -> valitse 080911_2hiirta.WDQ tai 290811_3hiirta.WDQ ja paina OK
+3. Klikkaa Result save Path (tai alt-r) -> valitse polku, jonne haluat tulostiedostot ja paina OK
+4. Klikkaa Indeksi2011 (tai alt-i) ja odota. Nappien pitaisi himmentya ja alimmalla rivilla olevan tekstin pitaisi paivittya ja kertoa mita tapahtuu
+
