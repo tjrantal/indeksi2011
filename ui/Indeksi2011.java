@@ -18,20 +18,10 @@
     Copyright (C) 2011 Timo Rantalainen, tjrantal@gmail.com
 */
 
-/*
-	A program for randomizing trials
-	
-	How to use the app to randomize trials:
-	Fill in how many trials
-	, set save path (by default the path, the .jar file is in)
-	, set filename to save the results to
-	, click randomize
-
-	Spits out a file with two columns. First is trials from 1 to number of trials, second is the randomization.
-
-	Insert the two columns to a template excel workbook having the names of the trials
-	Sort by randomization column.
-
+/*Program for analysing activity indices from vertical GRFs collected
+from underneath animal housing. Only useful for University of Jyvaskyla, who
+actually have such measurement apparatus. The WDQ file reading may be of use
+to DataQ or old Codas users.
 */
 
 package ui;
