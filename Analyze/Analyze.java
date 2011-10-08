@@ -30,6 +30,7 @@ public class Analyze{
 	public double[] previousDataPoints;
 	public long position;
 	public int animalsInFile;
+	double voltsToKilos = 0.1;
 	public Analyze(ReadWDQ dataIn,Indeksi2011 mainProgram){
 		String[] calibrations = mainProgram.calibrations.get(mainProgram.calibrationFileNo);
 		String saveName = mainProgram.savePath+"/";
@@ -74,7 +75,7 @@ public class Analyze{
 				yy =(corners[2]+corners[3])/(sum)*120.0; 
 			}
 			++datapisteita;
-			acc = sum*0.1/mass;
+			acc = sum*voltsToKilos/mass;
 			if (datapisteita > 1){
 				diffi[datapisteita-1] = Math.abs(acc-accOld);//.push_back(abs(acc-accOld));
 				siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));//.push_back(sqrt(pow(aks-aksOld,2)+	pow(yy-yyOld,2)));
@@ -92,7 +93,7 @@ public class Analyze{
 		for (int i = 0;i<datapisteita-1;i++){
 			matka += siirtymat[i];
 			++laskuri;
-			if (laskuri == ((int) samplingRate)*60*60){
+			if (laskuri == ((int) (samplingRate*60.0*60.0)){
 				matkat.add(matka/samplingRate);
 				matka =0.0;
 				laskuri =0;
@@ -143,7 +144,7 @@ public class Analyze{
 			while (linenum <10000)// (loppu-4*12+1))
 			{
 				for (int i = 0; i<4;++i){
-					writer.write(Double.toString(grfData.get(i)[linenum]));
+					writer.write(Double.toString(grfData.get(i)[linenum]*voltsToKilos));
 					if (i < 3){
 						writer.write("\t");
 					}else{
