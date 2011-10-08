@@ -196,28 +196,14 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 				savePath = new String("C:/Oma/Deakin/INDEKSI2011/javaScript");
 			}
 			System.out.println("Open file "+selectedFile.getName());
-			/*Check calibration file line*/
-			calibrationFileNo =0;
-			boolean	continueAnalysis = false;
-			while (selectedFile.getName().equalsIgnoreCase(calibrations.get(calibrationFileNo)[0])==false){
-				++calibrationFileNo;
-				if (calibrationFileNo == calibrations.size()-1){break;}
-			}
-			//System.out.println(listOfFiles[i].getName()+" Kalibraatio "+calibrationFile);
-			if (selectedFile.getName().equalsIgnoreCase(calibrations.get(calibrationFileNo)[0])==true) {
-				continueAnalysis = true;
-			}else{
-				status.setText(new String("No matching file found from calibration"));
-			}
-			if (continueAnalysis){
 			
-				try{
-					AnalysisThread analysisThread = new AnalysisThread(this);
-					Thread anaThread = new Thread(analysisThread,"analysisThread");
-					anaThread.start();	//All of the analysis needs to be done within this thread from hereafter
-					//anaThread.join();
-				}catch (Exception err){System.out.println("Failed analysis thread"+err);}
-			}
+			try{
+				AnalysisThread analysisThread = new AnalysisThread(this);
+				Thread anaThread = new Thread(analysisThread,"analysisThread");
+				anaThread.start();	//All of the analysis needs to be done within this thread from hereafter
+				//anaThread.join();
+			}catch (Exception err){System.out.println("Failed analysis thread"+err);}
+		
 			System.gc();	//Try to enforce carbage collection
 		}		
 	}

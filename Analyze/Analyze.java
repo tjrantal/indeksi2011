@@ -93,7 +93,7 @@ public class Analyze{
 		for (int i = 0;i<datapisteita-1;i++){
 			matka += siirtymat[i];
 			++laskuri;
-			if (laskuri == ((int) (samplingRate*60.0*60.0)){
+			if (laskuri == (int) (samplingRate*60.0*60.0)){
 				matkat.add(matka/samplingRate);
 				matka =0.0;
 				laskuri =0;

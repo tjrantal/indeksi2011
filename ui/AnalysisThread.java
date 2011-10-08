@@ -21,6 +21,7 @@ package ui;
 import ui.*;
 import Analyze.*;
 import ReadWDQ.*;
+import java.io.*;
 class AnalysisThread implements Runnable{
 	public Indeksi2011 mainProgram;
 	AnalysisThread(Indeksi2011 indIn){
@@ -28,10 +29,53 @@ class AnalysisThread implements Runnable{
 	}
 	
 	public void run(){
-		mainProgram.status.setText(new String("Reading file..."));
-		ReadWDQ readWDQ = new ReadWDQ(mainProgram.selectedFile);
-		mainProgram.status.setText(new String("Analyzing..."));
-		Analyze analyze = new Analyze(readWDQ,mainProgram);
+		if (mainProgram.selectedFile.isDirectory()){/*Go through each file, if folder was selected*/
+			File[] listOfFiles = mainProgram.selectedFile.listFiles();
+			for (int i = 0; i < listOfFiles.length; ++i){/*Loop through each file*/
+				if(listOfFiles[i].getName().toLowerCase().indexOf(".wdq") > -1){
+					mainProgram.calibrationFileNo =0;
+					boolean	continueAnalysis = false;
+					while (listOfFiles[i].getName().equalsIgnoreCase(mainProgram.calibrations.get(mainProgram.calibrationFileNo)[0])==false){
+						++mainProgram.calibrationFileNo;
+						if (mainProgram.calibrationFileNo == mainProgram.calibrations.size()-1){break;}
+					}
+					//System.out.println(listOfFiles[i].getName()+" Kalibraatio "+calibrationFile);
+					if (listOfFiles[i].getName().equalsIgnoreCase(mainProgram.calibrations.get(mainProgram.calibrationFileNo)[0])==true) {
+						continueAnalysis = true;
+					}else{
+						mainProgram.status.setText(new String("No matching file found from calibration"));
+					}
+					if (continueAnalysis){
+						mainProgram.status.setText(new String("Reading file..."));
+						ReadWDQ readWDQ = new ReadWDQ(listOfFiles[i]);
+						mainProgram.status.setText(new String("Analyzing..."));
+						Analyze analyze = new Analyze(readWDQ,mainProgram);
+					}
+				}
+			}
+			
+		}else{
+		/*Check calibration file line*/
+			mainProgram.calibrationFileNo =0;
+			boolean	continueAnalysis = false;
+			while (mainProgram.selectedFile.getName().equalsIgnoreCase(mainProgram.calibrations.get(mainProgram.calibrationFileNo)[0])==false){
+				++mainProgram.calibrationFileNo;
+				if (mainProgram.calibrationFileNo == mainProgram.calibrations.size()-1){break;}
+			}
+			//System.out.println(listOfFiles[i].getName()+" Kalibraatio "+calibrationFile);
+			if (mainProgram.selectedFile.getName().equalsIgnoreCase(mainProgram.calibrations.get(mainProgram.calibrationFileNo)[0])==true) {
+				continueAnalysis = true;
+			}else{
+				mainProgram.status.setText(new String("No matching file found from calibration"));
+			}
+			if (continueAnalysis){
+				mainProgram.status.setText(new String("Reading file..."));
+				ReadWDQ readWDQ = new ReadWDQ(mainProgram.selectedFile);
+				mainProgram.status.setText(new String("Analyzing..."));
+				Analyze analyze = new Analyze(readWDQ,mainProgram);
+			}
+		}
+		
 		mainProgram.status.setText(new String("ReadyToRumble"));
 		mainProgram.calibrationToOpen.setEnabled(true);
 		mainProgram.fileToOpen.setEnabled(true);
