@@ -156,7 +156,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	
 		if ("fileToOpen".equals(e.getActionCommand())){
 			JFileChooser chooser = new JFileChooser(initPath);
-			//chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			int returnVal = chooser.showOpenDialog(this);
 			if(returnVal == JFileChooser.APPROVE_OPTION) {
 				selectedFile = chooser.getSelectedFile();
