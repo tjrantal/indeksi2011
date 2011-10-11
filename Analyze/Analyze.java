@@ -62,8 +62,19 @@ public class Analyze{
 		double[] corners = new double[4];
 		double[] diffi = new double[grfData.get(0).length];
 		double[] siirtymat = new double[grfData.get(0).length];
+		
+		/*Debugging*/
+		BufferedWriter writerTemp;
+		try{
+			writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
+			
+			
+			
+			
+
+		
 		/*Start going through data*/
-		while (linenum <grfData.get(0).length)// (loppu-4*12+1))
+		while (linenum < 2000)//grfData.get(0).length)// (loppu-4*12+1))
 		{
 			/*Take values and sum to temp vars...*/
 			for (int i = 0; i<4;++i){
@@ -74,6 +85,10 @@ public class Analyze{
 				aks = (corners[1]+corners[2])/(sum)*277.0;
 				yy =(corners[2]+corners[3])/(sum)*120.0; 
 			}
+			if (linenum < 2000){
+				writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+aks+"\t"+yy+"\n");
+			}
+			
 			++datapisteita;
 			acc = sum*voltsToKilos/mass;
 			if (datapisteita > 1){
@@ -85,20 +100,28 @@ public class Analyze{
 			yyOld = yy;
 			++linenum;
 		}
+		
+					writerTemp.close();
+		}catch(Exception err){}
 		/*Calculate and print out results*/
 		/*Calculate distance*/
 		int laskuri =0;
 		double matka = 0.0;
+		double matka2 = 0.0;
 		Vector<Double> matkat = new Vector<Double>();
 		for (int i = 0;i<datapisteita-1;i++){
 			matka += siirtymat[i];
 			++laskuri;
 			if (laskuri == (int) (samplingRate*60.0*60.0)){
 				matkat.add(matka/samplingRate);
+				matka2+=matka;
 				matka =0.0;
 				laskuri =0;
-			}
-			
+			}			
+		}	
+		if (matka != 0.0){
+			matkat.add(matka/samplingRate);
+			matka2+=matka;
 		}		
 		/*Calculate index*/
 		double aind=0;
@@ -118,9 +141,14 @@ public class Analyze{
 			++laskuri;
 			if (laskuri == 60*60){
 				indeksit.add(aind);
+				aind2+=aind;
 				aind = 0;
 				laskuri = 0;
 			}
+		}
+		if (aind != 0.0){
+			indeksit.add(aind);
+			aind2+=aind;
 		}
 		/*Print results*/
 		BufferedWriter writer;
@@ -134,7 +162,16 @@ public class Analyze{
 			}
 			writer.close();
 		}catch(Exception err){}
+		/*For debugging... print total sums out...*/
+		try{
+			writer = new BufferedWriter(new FileWriter(saveName+"SUM_ALL_ANIMALS.xls",true));	//Append to saveName file
+			linenum = 0;
+			writer.write(fileName+"\t"+animalNo+"\t"+start+"\t"+stop+"\t");
+			writer.write(Double.toString(matka2)+"\t"+Double.toString(aind2)+"\n");
+			writer.close();
+		}catch(Exception err){}
 		/*For debugging... print GRFs out*/
+		/*
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+"GRFs_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
 			linenum = 0;
@@ -155,6 +192,7 @@ public class Analyze{
 			}	
 			writer.close();
 		}catch(Exception err){}
+		*/
 	}
 	
 	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile, double lowPassFrequency){
