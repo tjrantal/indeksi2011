@@ -206,11 +206,11 @@ public class Analyze{
 		try{
 			DataInputStream inFile = new DataInputStream(new BufferedInputStream(new FileInputStream(data.fileIn)));
 			inFile.skip((int) data.dataInHeader);
-			inFile.skip((animalsInFile-1)*4*2+3*2);	/*skip other animals and the three other channels*/		
+			inFile.skip(animal*4*2+channel*2);
 			for (int j = 0;j<(int)data.dataAmount/(2*data.channelNo);j++){
 				scaledFiltered[j] = ((double) Short.reverseBytes(inFile.readShort()))
 										*data.scalings[animal]*0.25;
-				inFile.skip(animal*4*2+channel*2);
+				inFile.skip((animalsInFile-1)*4*2+3*2);	/*skip other animals and the three other channels*/		
 			}
 			inFile.close();			
 		} catch (Exception err) {System.out.println("Can't read "+err.getMessage());}
