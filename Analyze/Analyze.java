@@ -64,18 +64,13 @@ public class Analyze{
 		double[] siirtymat = new double[grfData.get(0).length];
 		
 		/*Debugging*/
+		/*
 		BufferedWriter writerTemp;
 		try{
 			writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-			
-			
-			
-			
-
-		
-		/*Start going through data*/
-		while (linenum < 2000)//grfData.get(0).length)// (loppu-4*12+1))
-		{
+		*/
+			/*Start going through data*/
+		while (linenum < grfData.get(0).length){// 2000){//
 			/*Take values and sum to temp vars...*/
 			for (int i = 0; i<4;++i){
 				corners[i] = grfData.get(i)[linenum];
@@ -85,10 +80,12 @@ public class Analyze{
 				aks = (corners[1]+corners[2])/(sum)*277.0;
 				yy =(corners[2]+corners[3])/(sum)*120.0; 
 			}
+			
+			/*
 			if (linenum < 2000){
 				writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+aks+"\t"+yy+"\n");
 			}
-			
+			*/
 			++datapisteita;
 			acc = sum*voltsToKilos/mass;
 			if (datapisteita > 1){
@@ -101,8 +98,10 @@ public class Analyze{
 			++linenum;
 		}
 		
-					writerTemp.close();
+		/*
+		writerTemp.close();
 		}catch(Exception err){}
+		*/
 		/*Calculate and print out results*/
 		/*Calculate distance*/
 		int laskuri =0;
