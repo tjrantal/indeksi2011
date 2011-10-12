@@ -37,6 +37,7 @@ public class Analyze{
 		position = 0;
 		animalsInFile =dataIn.channelNo/4;
 		System.out.println("Elaimia "+ dataIn.channelNo/4);
+		//dataIn.dataAmount = 2000*2*dataIn.channelNo; //Debugging...
 		for (int i = 0; i<animalsInFile; ++i){ /*Loop for going through all of the data...*/
 			mainProgram.status.setText(new String("Started analyzing "+(i+1)+" out of "+animalsInFile));
 			Vector<double[]> grfData = new Vector<double[]>();	//Use this to store the data for this animal. Needs to be cleared for the next...
@@ -64,13 +65,13 @@ public class Analyze{
 		double[] siirtymat = new double[grfData.get(0).length];
 		
 		/*Debugging*/
-		/*
-		BufferedWriter writerTemp;
-		try{
-			writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-		*/
+		
+			BufferedWriter writerTemp;
+			try{
+				writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
+		
 			/*Start going through data*/
-		while (linenum < grfData.get(0).length){// 2000){//
+		while (linenum < grfData.get(0).length){// 1000){// 
 			/*Take values and sum to temp vars...*/
 			for (int i = 0; i<4;++i){
 				corners[i] = grfData.get(i)[linenum];
@@ -80,28 +81,29 @@ public class Analyze{
 				aks = (corners[1]+corners[2])/(sum)*277.0;
 				yy =(corners[2]+corners[3])/(sum)*120.0; 
 			}
-			
-			/*
-			if (linenum < 2000){
-				writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+aks+"\t"+yy+"\n");
-			}
-			*/
-			++datapisteita;
 			acc = sum*voltsToKilos/mass;
+			
+
+			
+			++datapisteita;
 			if (datapisteita > 1){
 				diffi[datapisteita-1] = Math.abs(acc-accOld);//.push_back(abs(acc-accOld));
 				siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));//.push_back(sqrt(pow(aks-aksOld,2)+	pow(yy-yyOld,2)));
 			}
+			if (linenum < 2000){
+				writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+acc+"\t"+diffi[datapisteita-1]+"\t"+aks+"\t"+yy+"\n");
+			}
+			
 			accOld = acc;
 			aksOld = aks;
 			yyOld = yy;
 			++linenum;
 		}
 		
-		/*
-		writerTemp.close();
-		}catch(Exception err){}
-		*/
+		
+			writerTemp.close();
+			}catch(Exception err){}
+		
 		/*Calculate and print out results*/
 		/*Calculate distance*/
 		int laskuri =0;
@@ -113,14 +115,14 @@ public class Analyze{
 			++laskuri;
 			if (laskuri == (int) (samplingRate*60.0*60.0)){
 				matkat.add(matka/samplingRate);
-				matka2+=matka;
+				matka2+=matka/samplingRate;
 				matka =0.0;
 				laskuri =0;
 			}			
 		}	
 		if (matka != 0.0){
 			matkat.add(matka/samplingRate);
-			matka2+=matka;
+			matka2+=matka/samplingRate;
 		}		
 		/*Calculate index*/
 		double aind=0;
@@ -133,10 +135,10 @@ public class Analyze{
 		while (kohta < datapisteita-(int) samplingRate-1){
 			vali = 0;
 			for (int i = 0;i<(int) samplingRate;i++){
-				vali += diffi[(int) kohta]/samplingRate;
+				vali += diffi[(int) kohta];
 				kohta++;
 			}
-			aind += vali;
+			aind += vali/samplingRate;
 			++laskuri;
 			if (laskuri == 60*60){
 				indeksit.add(aind);
@@ -165,7 +167,7 @@ public class Analyze{
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+"SUM_ALL_ANIMALS.xls",true));	//Append to saveName file
 			linenum = 0;
-			writer.write(fileName+"\t"+animalNo+"\t"+start+"\t"+stop+"\t");
+			writer.write(fileName+"\t"+animalNo+"\t"+start+"\t"+stop+"\t"+samplingRate+"\t"+mass+"\t");
 			writer.write(Double.toString(matka2)+"\t"+Double.toString(aind2)+"\n");
 			writer.close();
 		}catch(Exception err){}

@@ -33,6 +33,7 @@ class AnalysisThread implements Runnable{
 			File[] listOfFiles = mainProgram.selectedFile.listFiles();
 			for (int i = 0; i < listOfFiles.length; ++i){/*Loop through each file*/
 				if(listOfFiles[i].getName().toLowerCase().indexOf(".wdq") > -1){
+					mainProgram.analysisFileStatus.setText(listOfFiles[i].getName()+" "+(i+1)+"/"+listOfFiles.length);
 					mainProgram.calibrationFileNo =0;
 					boolean	continueAnalysis = false;
 					while (listOfFiles[i].getName().equalsIgnoreCase(mainProgram.calibrations.get(mainProgram.calibrationFileNo)[0])==false){
@@ -69,6 +70,7 @@ class AnalysisThread implements Runnable{
 				mainProgram.status.setText(new String("No matching file found from calibration"));
 			}
 			if (continueAnalysis){
+				mainProgram.analysisFileStatus.setText(mainProgram.selectedFile.getName());
 				mainProgram.status.setText(new String("Reading file..."));
 				ReadWDQ readWDQ = new ReadWDQ(mainProgram.selectedFile);
 				mainProgram.status.setText(new String("Analyzing..."));

@@ -53,6 +53,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public JButton openFile;
 	public JTextField lowPass;
 	public JLabel status;
+	public JLabel analysisFileStatus;
 	public File selectedFile;
 	public File calibrationFile;
 	public String savePath;
@@ -76,7 +77,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		}else{
 			initPath = vali.getAbsolutePath();
 		}
-		savePath = initPath;
+		savePath = null;
 		/*Add buttons and textfield...*/
 		JPanel buttons = new JPanel();
 		buttons.setLayout(new GridLayout(6,2,5,5));	/*Set button layout...*/
@@ -113,12 +114,14 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel(new String("Click to Open File")));
 		buttons.add(openFile);
 		
-		lowPass = new JTextField("15.0",4);
+		lowPass = new JTextField("5.0",4);
 		buttons.add(new JLabel("Low pass limit"));
 		buttons.add(lowPass);
 		
 		status = new JLabel(new String("Ready to Rumble"));
 		buttons.add(status);
+		analysisFileStatus = new JLabel(new String(""));
+		buttons.add(analysisFileStatus);
 		add(buttons);
 		
 	}
@@ -185,15 +188,18 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 			fileToSave.setEnabled(false);
 			/*For debugging, don't need to select files...*/
 			if (calibrations == null){
-				readCalibrationFile(new File("C:/Oma/Deakin/INDEKSI2011/javaScript/testi.csv"));	//Windows
+				readCalibrationFile(new File("C:/Oma/Deakin/INDEKSI2011/GITSKRIPTI/hiiriTesti.csv"));	//Windows
+				//readCalibrationFile(new File("C:/Oma/Deakin/INDEKSI2011/javaScript/testi.csv"));	//Windows
 				//readCalibrationFile(new File("/home/timo/Oma/Deakin/INDEKSI2011/javaScript/testi.csv"));	//Linux
 			}
 			if (selectedFile == null){
-				selectedFile = new File("C:/Oma/Deakin/INDEKSI2011/javaScript/290811_3hiirta.WDQ");	//Windows
+				selectedFile = new File("C:/Oma/Deakin/INDEKSI2011/hiiret");	//Windows
+				//selectedFile = new File("C:/Oma/Deakin/INDEKSI2011/javaScript/290811_3hiirta.WDQ");	//Windows
 				//selectedFile = new File("/home/timo/Oma/Deakin/INDEKSI2011/javaScript/290811_3hiirta.WDQ");	//Linux
 			}
 			if (savePath == null){
-				savePath = new String("C:/Oma/Deakin/INDEKSI2011/javaScript");
+				//savePath = new String("C:/Oma/Deakin/INDEKSI2011/javaScript");
+				savePath = new String("C:/Oma/Deakin/INDEKSI2011/GITSKRIPTI/results");
 			}
 			System.out.println("Open file "+selectedFile.getName());
 			
