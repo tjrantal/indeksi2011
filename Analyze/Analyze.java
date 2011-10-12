@@ -65,11 +65,11 @@ public class Analyze{
 		double[] siirtymat = new double[grfData.get(0).length];
 		
 		/*Debugging*/
-		
+		/*
 			BufferedWriter writerTemp;
 			try{
 				writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-		
+		*/
 			/*Start going through data*/
 		while (linenum < grfData.get(0).length){// 1000){// 
 			/*Take values and sum to temp vars...*/
@@ -90,9 +90,11 @@ public class Analyze{
 				diffi[datapisteita-1] = Math.abs(acc-accOld);//.push_back(abs(acc-accOld));
 				siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));//.push_back(sqrt(pow(aks-aksOld,2)+	pow(yy-yyOld,2)));
 			}
+			/*
 			if (linenum < 2000){
 				writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+acc+"\t"+diffi[datapisteita-1]+"\t"+aks+"\t"+yy+"\n");
 			}
+			*/
 			
 			accOld = acc;
 			aksOld = aks;
@@ -100,10 +102,10 @@ public class Analyze{
 			++linenum;
 		}
 		
-		
+		/*
 			writerTemp.close();
 			}catch(Exception err){}
-		
+		*/
 		/*Calculate and print out results*/
 		/*Calculate distance*/
 		int laskuri =0;
@@ -171,29 +173,6 @@ public class Analyze{
 			writer.write(Double.toString(matka2)+"\t"+Double.toString(aind2)+"\n");
 			writer.close();
 		}catch(Exception err){}
-		/*For debugging... print GRFs out*/
-		/*
-		try{
-			writer = new BufferedWriter(new FileWriter(saveName+"GRFs_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-			linenum = 0;
-			writer.write("FileName\tMouseNo\tStartTime\tStopTime\n");
-			writer.write(fileName+"\t"+animalNo+"\t"+start+"\t"+stop+"\n");
-			writer.write("FZ1\tFZ2\tFZ3\tFZ4\n");
-			while (linenum <10000)// (loppu-4*12+1))
-			{
-				for (int i = 0; i<4;++i){
-					writer.write(Double.toString(grfData.get(i)[linenum]*voltsToKilos));
-					if (i < 3){
-						writer.write("\t");
-					}else{
-						writer.write("\n");
-					}
-				}
-				++linenum;
-			}	
-			writer.close();
-		}catch(Exception err){}
-		*/
 	}
 	
 	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile, double lowPassFrequency){
