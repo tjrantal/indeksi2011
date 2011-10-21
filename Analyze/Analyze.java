@@ -36,14 +36,18 @@ public class Analyze{
 		String[] calibrations = mainProgram.calibrations.get(mainProgram.calibrationFileNo);
 		String saveName = mainProgram.savePath+"/";
 		position = 0;
-		animalsInFile =dataIn.channelNo/4;
-		System.out.println("Elaimia "+ dataIn.channelNo/4);
+		if (dataIn.channelNo%4 == 0){channelsPerAnimal = 4;}
+		if (dataIn.channelNo%5 == 0){channelsPerAnimal = 5;}
+		animalsInFile =dataIn.channelNo/channelsPerAnimal;
+		
+		
+		System.out.println("Elaimia "+ dataIn.channelNo/channelsPerAnimal);
 		//dataIn.dataAmount = 2000*2*dataIn.channelNo; //Debugging...
 		for (int i = 0; i<animalsInFile; ++i){ /*Loop for going through all of the data...*/
 			mainProgram.status.setText(new String("Started analyzing "+(i+1)+" out of "+animalsInFile));
 			Vector<double[]> grfData = new Vector<double[]>();	//Use this to store the data for this animal. Needs to be cleared for the next...
 			for (int j = 0; j<4;++j){	/*Get filtered data for the particular animal*/
-				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,Double.valueOf(mainProgram.lowPass.getText())));
+				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText())));
 			}
 			mainProgram.status.setText(new String("Scaled &  filtered "+(i+1)+" out of "+animalsInFile));
 			/*Do the actual analysis...*/
@@ -170,7 +174,7 @@ public class Analyze{
 		}catch(Exception err){}
 	}
 	
-	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile, double lowPassFrequency){
+	double[] scaleFilterData(ReadWDQ data, int animal, int channel,int channelsPerAnimal, int animalsInFile, double lowPassFrequency){
 		System.out.println("Reserving memory for scaled");
 		//try{Thread.sleep(5000);}catch  (Exception err){}
 		//System.out.println("Commensing");
@@ -181,11 +185,11 @@ public class Analyze{
 		try{
 			DataInputStream inFile = new DataInputStream(new BufferedInputStream(new FileInputStream(data.fileIn)));
 			inFile.skip((int) data.dataInHeader);
-			inFile.skip(animal*4*2+channel*2);
+			inFile.skip(animal*channelsPerAnimal*2+channel*2);
 			for (int j = 0;j<(int)data.dataAmount/(2*data.channelNo);j++){
 				scaledFiltered[j] = ((double) Short.reverseBytes(inFile.readShort()))
 										*data.scalings[animal]*0.25;
-				inFile.skip((animalsInFile-1)*4*2+3*2);	/*skip other animals and the three other channels*/		
+				inFile.skip((animalsInFile-1)*channelsPerAnimal*2+(channelsPerAnimal-1)*2);	/*skip other animals and the three other channels*/		
 			}
 			inFile.close();			
 		} catch (Exception err) {System.out.println("Can't read "+err.getMessage());}
