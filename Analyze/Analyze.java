@@ -30,6 +30,7 @@ public class Analyze{
 	public double[] previousDataPoints;
 	public long position;
 	public int animalsInFile;
+	public int channelsPerAnimal;
 	double voltsToKilos = 0.1;
 	public Analyze(ReadWDQ dataIn,Indeksi2011 mainProgram){
 		String[] calibrations = mainProgram.calibrations.get(mainProgram.calibrationFileNo);
@@ -65,47 +66,41 @@ public class Analyze{
 		double[] siirtymat = new double[grfData.get(0).length];
 		
 		/*Debugging*/
-		/*
-			BufferedWriter writerTemp;
-			try{
-				writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-		*/
-			/*Start going through data*/
-		while (linenum < grfData.get(0).length){// 1000){// 
-			/*Take values and sum to temp vars...*/
-			for (int i = 0; i<4;++i){
-				corners[i] = grfData.get(i)[linenum];
-			}
-			sum = corners[0]+corners[1]+corners[2]+corners[3];
-			if (sum == 0){}else{
-				aks = (corners[1]+corners[2])/(sum)*277.0;
-				yy =(corners[2]+corners[3])/(sum)*120.0; 
-			}
-			acc = sum*voltsToKilos/mass;
-			
-
-			
-			++datapisteita;
-			if (datapisteita > 1){
-				diffi[datapisteita-1] = Math.abs(acc-accOld);//.push_back(abs(acc-accOld));
-				siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));//.push_back(sqrt(pow(aks-aksOld,2)+	pow(yy-yyOld,2)));
-			}
-			/*
-			if (linenum < 2000){
-				writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+acc+"\t"+diffi[datapisteita-1]+"\t"+aks+"\t"+yy+"\n");
-			}
-			*/
-			
-			accOld = acc;
-			aksOld = aks;
-			yyOld = yy;
-			++linenum;
-		}
 		
-		/*
+		BufferedWriter writerTemp;
+		try{
+			writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
+		
+			/*Start going through data*/
+			while (linenum < grfData.get(0).length){// 1000){// 
+				/*Take values and sum to temp vars...*/
+				for (int i = 0; i<4;++i){
+					corners[i] = grfData.get(i)[linenum];
+				}
+				sum = corners[0]+corners[1]+corners[2]+corners[3];
+				if (sum == 0){}else{
+					aks = (corners[1]+corners[2])/(sum)*277.0;
+					yy =(corners[2]+corners[3])/(sum)*120.0; 
+				}
+				acc = sum*voltsToKilos/mass;
+				
+				++datapisteita;
+				if (datapisteita > 1){
+					diffi[datapisteita-1] = Math.abs(acc-accOld);
+					siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));
+				}
+				
+				//if (linenum < 2000){
+					writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+acc+"\t"+diffi[datapisteita-1]+"\t"+aks+"\t"+yy+"\n");
+				//}
+				accOld = acc;
+				aksOld = aks;
+				yyOld = yy;
+				++linenum;
+			}
 			writerTemp.close();
-			}catch(Exception err){}
-		*/
+		}catch(Exception err){}
+		
 		/*Calculate and print out results*/
 		/*Calculate distance*/
 		int laskuri =0;
