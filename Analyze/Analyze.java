@@ -51,11 +51,11 @@ public class Analyze{
 			}
 			mainProgram.status.setText(new String("Scaled &  filtered "+(i+1)+" out of "+animalsInFile));
 			/*Do the actual analysis...*/
-			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop);
+			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram.calibration);
 		}
 	}
 	
-	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop){
+	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,double[] calibration){
 		int linenum = 0;
 		int datapisteita = 0;
 		double aks=0;
@@ -83,8 +83,8 @@ public class Analyze{
 				}
 				sum = corners[0]+corners[1]+corners[2]+corners[3];
 				if (sum == 0){}else{
-					aks = (corners[1]+corners[2])/(sum)*277.0;
-					yy =(corners[2]+corners[3])/(sum)*120.0; 
+					aks = (corners[1]+corners[2])/(sum)*calibration[0];
+					yy =(corners[2]+corners[3])/(sum)*calibration[1]; 
 				}
 				acc = sum*voltsToKilos/mass;
 				

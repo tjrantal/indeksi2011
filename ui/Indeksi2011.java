@@ -60,6 +60,10 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public String initPath;
 	public Vector<String[]> calibrations;
 	public int calibrationFileNo;
+	public ButtonGroup buttonGroup;
+	public JRadioButton mouseCalibration;
+	public JRadioButton ratCalibration;
+	public double[] calibration;
 	public Indeksi2011(){
 		selectedFile = null;
 		/*Preset path*/
@@ -80,7 +84,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		savePath = null;
 		/*Add buttons and textfield...*/
 		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridLayout(6,2,5,5));	/*Set button layout...*/
+		buttons.setLayout(new GridLayout(7,2,5,5));	/*Set button layout...*/
 		calibrationToOpen= new JButton("Calibration file to Open");
 		calibrationToOpen.setMnemonic(KeyEvent.VK_C);
 		calibrationToOpen.setActionCommand("calibrationFile");
@@ -105,7 +109,25 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel(new String("Select Save Path")));
 		buttons.add(fileToSave);
 
-		
+		lowPass = new JTextField("5.0",4);
+		buttons.add(new JLabel("Low pass limit"));
+		buttons.add(lowPass);
+
+		/*Calibration selection*/
+		mouseCalibration = new JRadioButton("Mouse cage",true);
+		mouseCalibration.setMnemonic(KeyEvent.VK_O);
+		ratCalibration = new JRadioButton("Rat cage",false);
+		ratCalibration.setMnemonic(KeyEvent.VK_R);
+		buttonGroup = new ButtonGroup();
+		buttonGroup.add(mouseCalibration);
+		buttonGroup.add(ratCalibration);
+		JPanel calibrationSelection = new JPanel();
+		calibrationSelection.setLayout(new GridLayout(1,2,0,0));	/*Set button layout...*/
+		calibrationSelection.add(mouseCalibration);
+		calibrationSelection.add(ratCalibration);
+		buttons.add(new JLabel("Calibration"));
+		buttons.add(calibrationSelection);
+
 		openFile = new JButton("Indeksi2011");
 		openFile.setMnemonic(KeyEvent.VK_I);
 		openFile.setActionCommand("openFile");
@@ -114,15 +136,14 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel(new String("Click to Open File")));
 		buttons.add(openFile);
 		
-		lowPass = new JTextField("5.0",4);
-		buttons.add(new JLabel("Low pass limit"));
-		buttons.add(lowPass);
-		
 		status = new JLabel(new String("Ready to Rumble"));
 		buttons.add(status);
 		analysisFileStatus = new JLabel(new String(""));
 		buttons.add(analysisFileStatus);
 		add(buttons);
+		
+
+
 		
 	}
 	
@@ -202,6 +223,14 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 				savePath = new String("C:/Oma/Deakin/INDEKSI2011/GITSKRIPTI/results");
 			}
 			System.out.println("Open file "+selectedFile.getName());
+			/*Set calibration*/
+			calibration = new double[2];
+			calibration[0] = 277.0;
+			calibration[1] = 120.0;
+			if (ratCalibration.isSelected()){
+				calibration[0] = 498.0;
+				calibration[1] = 272.0;
+			}
 			
 			try{
 				AnalysisThread analysisThread = new AnalysisThread(this);
