@@ -1,4 +1,4 @@
 Created-By: Timo Rantalainen
 Main-Class: ui.Indeksi2011
-Implementation-Version: 1.0.3
+Implementation-Version: 1.0.4
 

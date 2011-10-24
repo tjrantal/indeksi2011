@@ -99,7 +99,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		calibrationToOpen.setActionCommand("calibrationFile");
 		calibrationToOpen.addActionListener(this);
 		calibrationToOpen.setToolTipText("Press to select file.");
-		buttons.add(new JLabel(new String("Calibration file to use")));
+		buttons.add(new JLabel("Calibration file to use"));
 		buttons.add(calibrationToOpen);
 		
 		/*WDQ file/path*/
@@ -117,7 +117,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		fileToSave.setActionCommand("fileToSave");
 		fileToSave.addActionListener(this);
 		fileToSave.setToolTipText("Press to select savePath.");
-		buttons.add(new JLabel(new String("Select Save Path")));
+		buttons.add(new JLabel("Select Save Path"));
 		buttons.add(fileToSave);
 
 		lowPass = new JTextField("5.0",4);
@@ -171,27 +171,42 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		openFile.setActionCommand("openFile");
 		openFile.addActionListener(this);
 		openFile.setToolTipText("Press to Open file.");
-		buttons.add(new JLabel(new String("Click to Open File")));
+		buttons.add(new JLabel("Click to Open File"));
 		buttons.add(openFile);
 		
 		/*Status texts*/
 		status = new JLabel(new String("Ready to Rumble"));
 		buttons.add(status);
-		analysisFileStatus = new JLabel(new String(""));
+		analysisFileStatus = new JLabel("");
 		buttons.add(analysisFileStatus);
 		add(buttons);
 		
-
+	
 
 		
+	}
+	
+	public JMenuBar newMenu(){
+		/*Add about menu...*/
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menu = new JMenu("About");
+		menu.setMnemonic(KeyEvent.VK_U);
+		Package p = getClass().getPackage();			//Get package info
+		String version = p.getImplementationVersion();	//Show version number (used in webstart to determine whether 
+		JMenuItem menuItem = new JMenuItem("Version "+version);
+		menu.add(menuItem);
+		menuBar.add(menu);
+		return menuBar;	
 	}
 	
 	public static void initAndShowGU(){
 		JFrame f = new JFrame("OpenWDQ");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		JComponent newContentPane = new Indeksi2011();
+		Indeksi2011 indeksi2011 = new Indeksi2011();
+		JComponent newContentPane = indeksi2011;
 		newContentPane.setOpaque(true); //content panes must be opaque
 		f.setContentPane(newContentPane);
+		f.setJMenuBar(indeksi2011.newMenu());
 		f.pack();
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int w = 300;
