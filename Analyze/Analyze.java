@@ -47,15 +47,15 @@ public class Analyze{
 			mainProgram.status.setText(new String("Started analyzing "+(i+1)+" out of "+animalsInFile));
 			Vector<double[]> grfData = new Vector<double[]>();	//Use this to store the data for this animal. Needs to be cleared for the next...
 			for (int j = 0; j<4;++j){	/*Get filtered data for the particular animal*/
-				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText())));
+				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText()),mainProgram.subtract));
 			}
 			mainProgram.status.setText(new String("Scaled &  filtered "+(i+1)+" out of "+animalsInFile));
 			/*Do the actual analysis...*/
-			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram.calibration);
+			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram.calibration,mainProgram.writeCoordinates);
 		}
 	}
 	
-	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,double[] calibration){
+	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,double[] calibration,boolean writeCoordinates){
 		int linenum = 0;
 		int datapisteita = 0;
 		double aks=0;
@@ -71,10 +71,11 @@ public class Analyze{
 		
 		/*Debugging*/
 		
-		BufferedWriter writerTemp;
+		BufferedWriter writerTemp = null;
 		try{
-			writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-		
+			if (writeCoordinates){
+				writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
+			}
 			/*Start going through data*/
 			while (linenum < grfData.get(0).length){// 1000){// 
 				/*Take values and sum to temp vars...*/
@@ -94,15 +95,17 @@ public class Analyze{
 					siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));
 				}
 				
-				//if (linenum < 2000){
+				if (writeCoordinates){
 					writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+acc+"\t"+diffi[datapisteita-1]+"\t"+aks+"\t"+yy+"\n");
-				//}
+				}
 				accOld = acc;
 				aksOld = aks;
 				yyOld = yy;
 				++linenum;
 			}
-			writerTemp.close();
+			if (writeCoordinates){
+				writerTemp.close();
+			}
 		}catch(Exception err){}
 		
 		/*Calculate and print out results*/
@@ -174,7 +177,7 @@ public class Analyze{
 		}catch(Exception err){}
 	}
 	
-	double[] scaleFilterData(ReadWDQ data, int animal, int channel,int channelsPerAnimal, int animalsInFile, double lowPassFrequency){
+	double[] scaleFilterData(ReadWDQ data, int animal, int channel,int channelsPerAnimal, int animalsInFile, double lowPassFrequency,double[] subtract){
 		System.out.println("Reserving memory for scaled");
 		//try{Thread.sleep(5000);}catch  (Exception err){}
 		//System.out.println("Commensing");
@@ -188,7 +191,7 @@ public class Analyze{
 			inFile.skip(animal*channelsPerAnimal*2+channel*2);
 			for (int j = 0;j<(int)data.dataAmount/(2*data.channelNo);j++){
 				scaledFiltered[j] = ((double) Short.reverseBytes(inFile.readShort()))
-										*data.scalings[animal]*0.25;
+										*data.scalings[animal]*0.25+subtract[channel];
 				inFile.skip((animalsInFile-1)*channelsPerAnimal*2+(channelsPerAnimal-1)*2);	/*skip other animals and the three other channels*/		
 			}
 			inFile.close();			

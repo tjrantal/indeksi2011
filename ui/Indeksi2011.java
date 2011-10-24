@@ -63,7 +63,14 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public ButtonGroup buttonGroup;
 	public JRadioButton mouseCalibration;
 	public JRadioButton ratCalibration;
+	public ButtonGroup subtractGroup;
+	public JRadioButton subtractNone;
+	public JRadioButton subtractHalf;
+	public JRadioButton subtractOne;
+	public JCheckBox writeCoordinatesCheck;
 	public double[] calibration;
+	public double[] subtract;
+	public boolean writeCoordinates;
 	public Indeksi2011(){
 		selectedFile = null;
 		/*Preset path*/
@@ -84,7 +91,9 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		savePath = null;
 		/*Add buttons and textfield...*/
 		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridLayout(7,2,5,5));	/*Set button layout...*/
+		buttons.setLayout(new GridLayout(9,2,5,5));	/*Set button layout...*/
+		
+		/*Calibrations file*/
 		calibrationToOpen= new JButton("Calibration file to Open");
 		calibrationToOpen.setMnemonic(KeyEvent.VK_C);
 		calibrationToOpen.setActionCommand("calibrationFile");
@@ -93,6 +102,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel(new String("Calibration file to use")));
 		buttons.add(calibrationToOpen);
 		
+		/*WDQ file/path*/
 		fileToOpen= new JButton("WDQ file to Open");
 		fileToOpen.setMnemonic(KeyEvent.VK_W);
 		fileToOpen.setActionCommand("fileToOpen");
@@ -101,6 +111,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel(new String("File to Open")));
 		buttons.add(fileToOpen);
 		
+		/*Results save path*/
 		fileToSave= new JButton("Result save Path");
 		fileToSave.setMnemonic(KeyEvent.VK_R);
 		fileToSave.setActionCommand("fileToSave");
@@ -117,7 +128,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		mouseCalibration = new JRadioButton("Mouse cage",true);
 		mouseCalibration.setMnemonic(KeyEvent.VK_O);
 		ratCalibration = new JRadioButton("Rat cage",false);
-		ratCalibration.setMnemonic(KeyEvent.VK_R);
+		ratCalibration.setMnemonic(KeyEvent.VK_A);
 		buttonGroup = new ButtonGroup();
 		buttonGroup.add(mouseCalibration);
 		buttonGroup.add(ratCalibration);
@@ -128,6 +139,33 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel("Calibration"));
 		buttons.add(calibrationSelection);
 
+		/*Subtract from corners*/
+		subtractNone = new JRadioButton("None",true);
+		subtractNone.setMnemonic(KeyEvent.VK_N);
+		subtractHalf = new JRadioButton("Half (-0.5)",false);
+		subtractHalf.setMnemonic(KeyEvent.VK_H);
+		subtractOne = new JRadioButton("One (-1.0)",false);
+		subtractOne.setMnemonic(KeyEvent.VK_E);
+		subtractGroup = new ButtonGroup();
+		subtractGroup.add(subtractNone);
+		subtractGroup.add(subtractHalf);
+		subtractGroup.add(subtractOne);
+
+		JPanel subtractSelection = new JPanel();
+		subtractSelection.setLayout(new GridLayout(1,3,0,0));	/*Set button layout...*/
+		subtractSelection.add(subtractNone);
+		subtractSelection.add(subtractHalf);
+		subtractSelection.add(subtractOne);
+		buttons.add(new JLabel("Subtract corners"));
+		buttons.add(subtractSelection);
+		
+		/*Print coordinates*/
+		writeCoordinatesCheck = new JCheckBox("Ticked = yes",false);
+		writeCoordinatesCheck.setMnemonic(KeyEvent.VK_S);
+		buttons.add(new JLabel("Print coordinates"));
+		buttons.add(writeCoordinatesCheck);
+		
+		/*Run the analysis*/
 		openFile = new JButton("Indeksi2011");
 		openFile.setMnemonic(KeyEvent.VK_I);
 		openFile.setActionCommand("openFile");
@@ -136,6 +174,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel(new String("Click to Open File")));
 		buttons.add(openFile);
 		
+		/*Status texts*/
 		status = new JLabel(new String("Ready to Rumble"));
 		buttons.add(status);
 		analysisFileStatus = new JLabel(new String(""));
@@ -223,6 +262,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 				savePath = new String("C:/Oma/Deakin/INDEKSI2011/GITSKRIPTI/results");
 			}
 			System.out.println("Open file "+selectedFile.getName());
+			
 			/*Set calibration*/
 			calibration = new double[2];
 			calibration[0] = 277.0;
@@ -232,6 +272,25 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 				calibration[1] = 272.0;
 			}
 			
+			/*Subtract corners*/
+			subtract = new double[5];
+			for (int i = 0; i<5; ++i){subtract[i]=0.0;}
+			if (subtractHalf.isSelected()){
+				for (int i = 0; i<4; ++i){subtract[i]=-0.5;}	//N.B. subtract[4] = 0!!!
+			}
+			if (subtractOne.isSelected()){
+				for (int i = 0; i<4; ++i){subtract[i]=-1.0;}	//N.B. subtract[4] = 0!!!
+			}
+			/*Set calibration*/
+			calibration = new double[2];
+			calibration[0] = 277.0;
+			calibration[1] = 120.0;
+			if (ratCalibration.isSelected()){
+				calibration[0] = 498.0;
+				calibration[1] = 272.0;
+			}
+			/*Write coordinates*/
+			writeCoordinates = writeCoordinatesCheck.isSelected();
 			try{
 				AnalysisThread analysisThread = new AnalysisThread(this);
 				Thread anaThread = new Thread(analysisThread,"analysisThread");
