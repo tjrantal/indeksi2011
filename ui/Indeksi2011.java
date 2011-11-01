@@ -68,9 +68,11 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public JRadioButton subtractHalf;
 	public JRadioButton subtractOne;
 	public JCheckBox writeCoordinatesCheck;
+	public JCheckBox writeFFTCheck;
 	public double[] calibration;
 	public double[] subtract;
 	public boolean writeCoordinates;
+	public boolean writeFFT;
 	public Indeksi2011(){
 		selectedFile = null;
 		/*Preset path*/
@@ -91,7 +93,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		savePath = null;
 		/*Add buttons and textfield...*/
 		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridLayout(9,2,5,5));	/*Set button layout...*/
+		buttons.setLayout(new GridLayout(10,2,5,5));	/*Set button layout...*/
 		
 		/*Calibrations file*/
 		calibrationToOpen= new JButton("Calibration file to Open");
@@ -164,6 +166,12 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		writeCoordinatesCheck.setMnemonic(KeyEvent.VK_S);
 		buttons.add(new JLabel("Print coordinates"));
 		buttons.add(writeCoordinatesCheck);
+
+		/*Print FFT*/
+		writeFFTCheck = new JCheckBox("Ticked = yes N.B. Filtering gets turned off!",false);
+		writeFFTCheck.setMnemonic(KeyEvent.VK_F);
+		buttons.add(new JLabel("Print FFT (turns of filtering...)"));
+		buttons.add(writeFFTCheck);
 		
 		/*Run the analysis*/
 		openFile = new JButton("Indeksi2011");
@@ -305,7 +313,8 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 				calibration[1] = 272.0;
 			}
 			/*Write coordinates*/
-			writeCoordinates = writeCoordinatesCheck.isSelected();
+			writeCoordinates	= writeCoordinatesCheck.isSelected();
+			writeFFT			= writeFFTCheck.isSelected();
 			try{
 				AnalysisThread analysisThread = new AnalysisThread(this);
 				Thread anaThread = new Thread(analysisThread,"analysisThread");

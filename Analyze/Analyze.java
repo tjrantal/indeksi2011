@@ -22,7 +22,8 @@
 package Analyze;
 import ReadWDQ.*;
 import ui.*;
-import Filter.*;
+import Filter.*;	/*Butterworh filtering*/
+import fft.*;		/*Fast Fourier Transform*/
 import java.util.Vector;
 import java.lang.Math;
 import java.io.*;
@@ -47,15 +48,15 @@ public class Analyze{
 			mainProgram.status.setText(new String("Started analyzing "+(i+1)+" out of "+animalsInFile));
 			Vector<double[]> grfData = new Vector<double[]>();	//Use this to store the data for this animal. Needs to be cleared for the next...
 			for (int j = 0; j<4;++j){	/*Get filtered data for the particular animal*/
-				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText()),mainProgram.subtract));
+				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText()),mainProgram.subtract,mainProgram.writeFFT));
 			}
 			mainProgram.status.setText(new String("Scaled &  filtered "+(i+1)+" out of "+animalsInFile));
 			/*Do the actual analysis...*/
-			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram.calibration,mainProgram.writeCoordinates);
+			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram.calibration,mainProgram.writeCoordinates,mainProgram.writeFFT);
 		}
 	}
 	
-	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,double[] calibration,boolean writeCoordinates){
+	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,double[] calibration,boolean writeCoordinates, boolean writeFFT){
 		int linenum = 0;
 		int datapisteita = 0;
 		double aks=0;
@@ -69,8 +70,53 @@ public class Analyze{
 		double[] diffi = new double[grfData.get(0).length];
 		double[] siirtymat = new double[grfData.get(0).length];
 		
-		/*Debugging*/
+		/*FFT analysis*/
+		if (writeFFT){
+			int windowLength = (int) samplingRate*60*60;			//datapoints in an hour
+			double testi = (Math.log(windowLength) / Math.log(2));	//Check whether datapoints in an hour is power of 2
+			int fftWindow = 1<<(int) Math.ceil(testi);			//Select the next longer power of 2 as window size JATKA TASTA!!
+			double[] freq = new double[fftWindow/2];
+			for (int b = 0;b<freq.length;b++){
+				freq[b] = (double) b*(double)samplingRate/(double) fftWindow;
+			}
+			Vector<double[]> fftData = new Vector<double[]>();
+			fft.Complex[] fftDataIn = new fft.Complex[fftWindow];
+			
+			/*Start going through data for the fft*/
+			int hour = 0;
+			while (linenum < grfData.get(0).length-fftWindow){// 1000){// 
+				//Tahan for kaydaan dataInLength verran dataa kerrallaan FFT:ssa
+				int temp = linenum;
+				fftData.clear();
+				for (int ch = 0; ch<4;++ch){
+					temp = linenum;
+					for (int i = 0; i < fftWindow; ++i) {
+						fftDataIn[i] = new fft.Complex(grfData.get(ch)[temp], 0);
+						++temp;
+					}
+					fftData.add(FFT.calculateAmplitudes(FFT.fft(fftDataIn)));
+				}
+				try{
+					BufferedWriter writerTemp2 = new BufferedWriter(new FileWriter(saveName+"FFT_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+"_"+hour+"h.xls",false));				//Overwrite saveName file
+					for (int i = 0; i < fftWindow/2; ++i) {
+						writerTemp2.write(freq[i]+"\t");
+						for (int j = 0; j<4; ++j){
+							writerTemp2.write(Double.toString(fftData.get(j)[i]));
+							if (j <3){
+								writerTemp2.write("\t");
+							}else{
+								writerTemp2.write("\n");
+							}
+						}
+					}
+					writerTemp2.close();	//Close the file
+				}catch(Exception err){}
+				linenum = temp;
+				++hour;
+			}
+		}
 		
+		/*Index analysis*/
 		BufferedWriter writerTemp = null;
 		try{
 			if (writeCoordinates){
@@ -177,12 +223,8 @@ public class Analyze{
 		}catch(Exception err){}
 	}
 	
-	double[] scaleFilterData(ReadWDQ data, int animal, int channel,int channelsPerAnimal, int animalsInFile, double lowPassFrequency,double[] subtract){
-		System.out.println("Reserving memory for scaled");
-		//try{Thread.sleep(5000);}catch  (Exception err){}
-		//System.out.println("Commensing");
+	double[] scaleFilterData(ReadWDQ data, int animal, int channel,int channelsPerAnimal, int animalsInFile, double lowPassFrequency,double[] subtract, boolean writeFFT){
 		double[] scaledFiltered = new double[(int)data.dataAmount/(2*data.channelNo)]; /*Reserve Memory...*/
-		System.out.println("Managed to reserve memory");
 		/*Read data from file to save memomry*/
 		int headerRead;
 		try{
@@ -197,13 +239,13 @@ public class Analyze{
 			inFile.close();			
 		} catch (Exception err) {System.out.println("Can't read "+err.getMessage());}
 		/*Filter the data...*/
-		ButterworthCoefficients butterworthCoefficients = new  ButterworthCoefficients();
-		//String[] args = {"Bu","Lp","o","2","a",Double.toString(5.0*data.samplingInterval)};
-		String[] args = {"Bu","Lp","o","2","a",Double.toString(lowPassFrequency*data.samplingInterval)};
-		butterworthCoefficients.butter(args);	/*Get butterworth coeffiecients*/
-		System.out.println("Coefficients obtained");
-		scaledFiltered = butterworthCoefficients.filtfilt(scaledFiltered);
-		System.out.println("Filtered channel "+animal);
+		if (!writeFFT){ //Don't filter, if writing FFT has been requested...
+			ButterworthCoefficients butterworthCoefficients = new  ButterworthCoefficients();
+			String[] args = {"Bu","Lp","o","2","a",Double.toString(lowPassFrequency*data.samplingInterval)};
+			butterworthCoefficients.butter(args);	/*Get butterworth coeffiecients*/
+			System.out.println("Coefficients obtained");
+			scaledFiltered = butterworthCoefficients.filtfilt(scaledFiltered);
+		}
 		return scaledFiltered;
 	}
 }
