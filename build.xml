@@ -1,0 +1,52 @@
+<!-- JFFMpeg ANT build system -->
+
+<project name="Indeksi2011" default="jar" basedir=".">
+  <description>
+    Ant build system for Indeksi2011
+  </description>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/>
+  <property name="JAVA_HOME" location="${env.JAVA_HOME}" />
+  <!--
+  <property name="JMF_HOME" location="${env.JMF_HOME}" />
+	-->
+  <property name="javasrc" location="src" />
+  <property name="build"   location="build" />
+  <property name="classes" location="build/java" />
+  <property name="dist"    location="build/dist" />
+
+  <!-- Classpath 
+  <path id="jmf.path">
+    <pathelement path="${JMF_HOME}/lib/jmf.jar"/>
+  </path>
+	-->
+  <!-- Initialize -->
+  <target name="init">
+    <tstamp/>
+    <!-- Echo values passed in so there's no confusion -->
+    <echo message="JAVA_HOME is ${JAVA_HOME}"/>
+    <mkdir dir="${build}" />
+    <mkdir dir="${classes}" />
+  </target>
+
+ 
+  <target name="javacompile" depends="init" description="Compile Java source" >
+    <javac source="1.5" srcdir="${javasrc}" destdir="${classes}" nowarn="on">
+		<!--Include jmf classpath & jars here...
+		<classpath> 
+			<pathelement path="${classes}"/>
+		</classpath>
+		 -->
+    </javac>
+  </target>
+
+  <target name="jar" depends="javacompile" description="Create Jar file" >
+    <mkdir dir="${dist}"/>
+	<jar jarfile="Indeksi2011.jar" basedir="${classes}" manifest="manifest/manifest.mf"/>
+  </target>
+  
+  <target name="clean" description="Remove output files" >
+    <delete dir="${build}"/>
+  </target>
+</project>
