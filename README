@@ -2,7 +2,6 @@ Indeksi 2011 project for analysing activity indices from ground reaction forces.
 
 Compile with ant (i.e. just "ant" in the root directory, provided that JAVA_HOME and ANT_HOME environment varibles are properly set).
 Check compile.bat to get started
-Alternatively check compileIndeksi2011.bat
 
 Use
 1. Klikkaa Calibartion file to Open (tai alt-c) -> valitse testi.csv ja paina OK
