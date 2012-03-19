@@ -20,7 +20,7 @@
 
 /*Class for debugging. Prints out a file with data*/
 
-package ui;
+package Analyze;
 import ReadWDQ.*;
 import java.io.*;
 
@@ -48,6 +48,18 @@ public class PrintForces{
 				
 			}
 			inFile.close();			
+			writer.close();
+		} catch (Exception err) {System.out.println("Can't read "+err.getMessage());}
+	}
+	
+	public static void printArray(double[] dataArray, String suffix){
+		try{
+			BufferedWriter writer;
+			writer = new BufferedWriter(new FileWriter("D:/UserData/ratimo/Oma/Deakin/INDEKSI2011/testiResults/voimatCh"+suffix+".xls",false));	//Overwrite saveName file
+
+			for (int j = 0;j<dataArray.length;++j){
+				writer.write(dataArray[j]+"\n");
+			}
 			writer.close();
 		} catch (Exception err) {System.out.println("Can't read "+err.getMessage());}
 	}
