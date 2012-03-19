@@ -43,6 +43,14 @@
 
   <target name="jar" depends="javacompile" description="Create Jar file" >
     <mkdir dir="${dist}"/>
+	<delete file="manifest/manifest.mf"/>
+	<property name="version.num" value="1"/>
+    <buildnumber file="manifest/build.num"/>
+	<manifest file="manifest/manifest.mf">
+		<attribute name="Built-By" value="${user.name}"/>
+		<attribute name="Main-Class" value="ui.Indeksi2011"/>
+		<attribute name="Implementation-Version" value="${version.num}.${build.number}"/>
+	</manifest>
 	<jar jarfile="Indeksi2011.jar" basedir="${classes}" manifest="manifest/manifest.mf"/>
   </target>
   
