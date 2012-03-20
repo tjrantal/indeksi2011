@@ -164,15 +164,15 @@ public class Analyze{
 			matka += siirtymat[i];
 			++laskuri;
 			if (laskuri == (int) (samplingRate*60.0*60.0)){
-				matkat.add(matka/samplingRate);
-				matka2+=matka/samplingRate;
+				matkat.add(matka);
+				matka2+=matka;
 				matka =0.0;
 				laskuri =0;
 			}			
 		}	
 		if (matka != 0.0){
-			matkat.add(matka/samplingRate);
-			matka2+=matka/samplingRate;
+			matkat.add(matka);
+			matka2+=matka;
 		}		
 		/*Calculate index*/
 		double aind=0;
