@@ -52,11 +52,11 @@ public class Analyze{
 			}
 			mainProgram.status.setText(new String("Scaled &  filtered "+(i+1)+" out of "+animalsInFile));
 			/*Do the actual analysis...*/
-			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram.calibration,mainProgram.writeCoordinates,mainProgram.writeFFT);
+			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram);
 		}
 	}
 	
-	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,double[] calibration,boolean writeCoordinates, boolean writeFFT){
+	void calculateIndex(Vector<double[]> grfData,double mass,double samplingRate,String saveName,String fileName,int animalNo,String start, String stop,Indeksi2011 mainProgram){
 		int linenum = 0;
 		int datapisteita = 0;
 		double aks=0;
@@ -71,8 +71,9 @@ public class Analyze{
 		double[] siirtymat = new double[grfData.get(0).length];
 		
 		/*FFT analysis*/
-		if (writeFFT){
-			int windowLength = (int) samplingRate*60*60;			//datapoints in an hour
+		//System.out.println("Write FFT "+writeFFT);
+		if (mainProgram.writeFFT){
+			int windowLength = (int) samplingRate*mainProgram.fftMins*60;			//datapoints in an hour
 			double testi = (Math.log(windowLength) / Math.log(2));	//Check whether datapoints in an hour is power of 2
 			int fftWindow = 1<<(int) Math.ceil(testi);			//Select the next longer power of 2 as window size JATKA TASTA!!
 			double[] freq = new double[fftWindow/2];
@@ -84,6 +85,7 @@ public class Analyze{
 			
 			/*Start going through data for the fft*/
 			int hour = 0;
+			System.out.println("Hour calculated, linenum "+linenum+" length "+grfData.get(0).length+" widnow "+fftWindow);
 			while (linenum < grfData.get(0).length-fftWindow){// 1000){// 
 				//Tahan for kaydaan dataInLength verran dataa kerrallaan FFT:ssa
 				int temp = linenum;
@@ -96,6 +98,7 @@ public class Analyze{
 					}
 					fftData.add(FFT.calculateAmplitudes(FFT.fft(fftDataIn)));
 				}
+				System.out.println("Hour calculated, linenum "+linenum);
 				try{
 					BufferedWriter writerTemp2 = new BufferedWriter(new FileWriter(saveName+"FFT_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+"_"+hour+"h.xls",false));				//Overwrite saveName file
 					for (int i = 0; i < fftWindow/2; ++i) {
@@ -119,7 +122,7 @@ public class Analyze{
 		/*Index analysis*/
 		BufferedWriter writerTemp = null;
 		try{
-			if (writeCoordinates){
+			if (mainProgram.writeCoordinates){
 				writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
 			}
 			/*Start going through data*/
@@ -130,8 +133,8 @@ public class Analyze{
 				}
 				sum = corners[0]+corners[1]+corners[2]+corners[3];
 				if (sum == 0){}else{
-					aks = (corners[1]+corners[2])/(sum)*calibration[0];
-					yy =(corners[2]+corners[3])/(sum)*calibration[1]; 
+					aks = (corners[1]+corners[2])/(sum)*mainProgram.calibration[0];
+					yy =(corners[2]+corners[3])/(sum)*mainProgram.calibration[1]; 
 				}
 				acc = sum*voltsToKilos/mass;
 				
@@ -141,7 +144,7 @@ public class Analyze{
 					siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));
 				}
 				
-				if (writeCoordinates){
+				if (mainProgram.writeCoordinates){
 					writerTemp.write(corners[0]+"\t"+corners[1]+"\t"+corners[2]+"\t"+corners[3]+"\t"+acc+"\t"+diffi[datapisteita-1]+"\t"+aks+"\t"+yy+"\n");
 				}
 				accOld = acc;
@@ -149,7 +152,7 @@ public class Analyze{
 				yyOld = yy;
 				++linenum;
 			}
-			if (writeCoordinates){
+			if (mainProgram.writeCoordinates){
 				writerTemp.close();
 			}
 		}catch(Exception err){}
