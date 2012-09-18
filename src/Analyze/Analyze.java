@@ -158,23 +158,48 @@ public class Analyze{
 		}catch(Exception err){}
 		
 		/*Calculate and print out results*/
+		/*Get minimum index to use as a activity threshold*/
+		double epochLength = 10.0;
+		int minIndex = minEpochIndex(siirtymat,samplingRate, epochLength);
+		double matka = 0.0;
+		double indeksi = 0.0;
+		/*Calculate threshold values*/
+		for (int j = minIndex; j <minIndex+((int) (epochLength*samplingRate*60.0));++j){
+			matka+= siirtymat[j];
+		}
+		double matkaThreshold = 1.1*matka/(epochLength*samplingRate*60.0); /*Use 1.1 times mean difference as activity threshold*/
+		
 		/*Calculate distance*/
 		int laskuri =0;
-		double matka = 0.0;
+		matka = 0.0;
 		double matka2 = 0.0;
+		double nopeus = 0.0;
+		double aktiivisuus = 0.0;
 		Vector<Double> matkat = new Vector<Double>();
+		Vector<Double> nopeudet = new Vector<Double>();
+		Vector<Double> aktiivisuusAika = new Vector<Double>();
 		for (int i = 0;i<datapisteita-1;i++){
 			matka += siirtymat[i];
+			nopeus += siirtymat[i]/samplingRate;
+			if (siirtymat[i] > matkaThreshold){
+				aktiivisuus+=1.0/samplingRate;
+			}							
 			++laskuri;
-			if (laskuri == (int) (samplingRate*60.0*60.0)){
+			if (laskuri == (int) (samplingRate*((double) mainProgram.resultMins)*60.0)){
 				matkat.add(matka);
+				nopeudet.add(nopeus/((double)laskuri));
+				aktiivisuusAika.add(aktiivisuus/60.0);
 				matka2+=matka;
+				nopeus = 0.0;
 				matka =0.0;
+				aktiivisuus = 0;
 				laskuri =0;
 			}			
 		}	
 		if (matka != 0.0){
 			matkat.add(matka);
+			nopeudet.add(nopeus/((double)laskuri));
+			aktiivisuusAika.add(aktiivisuus/60.0);
 			matka2+=matka;
 		}		
 		/*Calculate index*/
@@ -193,7 +218,7 @@ public class Analyze{
 			}
 			aind += vali/samplingRate;
 			++laskuri;
-			if (laskuri == 60*60){
+			if (laskuri == mainProgram.resultMins*60){
 				indeksit.add(aind);
 				aind2+=aind;
 				aind = 0;
@@ -208,11 +233,11 @@ public class Analyze{
 		BufferedWriter writer;
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-			writer.write("FileName\tMouseNo\tStartTime\tStopTime\n");
-			writer.write(fileName+"\t"+animalNo+"\t"+start+"\t"+stop+"\n");
-			writer.write("Hour\tDistance [mm]\tIndex\n");
+			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\n");
+			writer.write(fileName+"\t"+mainProgram.resultMins+"\t"+animalNo+"\t"+start+"\t"+stop+"\n");
+			writer.write("Hour\tDistance [mm]\tIndex\tVelocity [mm/s]\tActivityTime [min]\n");
 			for (int i =0; i<matkat.size();++i){
-				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\n");
+				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\n");
 			}
 			writer.close();
 		}catch(Exception err){}
@@ -224,6 +249,27 @@ public class Analyze{
 			writer.write(Double.toString(matka2)+"\t"+Double.toString(aind2)+"\n");
 			writer.close();
 		}catch(Exception err){}
+	}
+	
+	/*
+		
+		epochLength = epochLength in minutes
+	*/
+	private int minEpochIndex(double[] siirtymat, double samplingRate, double epochLength){
+		double sum = 0;
+		int minIndex = 0;
+		double minSum = Double.POSITIVE_INFINITY;
+		for (int i = 0; i<siirtymat.length-((int) (epochLength*samplingRate*60.0)) ; ++i){
+			sum = 0;
+			for (int j = 0; j <((int) (epochLength*samplingRate*60.0));++j){
+				sum+= siirtymat[i+j];
+			}
+			if (sum < minSum){
+				minSum = sum;
+				minIndex = i;
+			}
+		}
+		return minIndex;
 	}
 	
 	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile,int channelsPerAnimal, double lowPassFrequency,double[] subtract, boolean writeFFT){

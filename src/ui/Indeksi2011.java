@@ -70,8 +70,9 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public JCheckBox writeCoordinatesCheck;
 	public JCheckBox writeFFTCheck;
 	public JTextField fftMinsCheck;
-	public int fftMins;		
-	
+	public JTextField resultEpochLength;
+	public int fftMins;
+	public int resultMins;	
 	
 	public double[] calibration;
 	public double[] subtract;
@@ -97,7 +98,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		savePath = null;
 		/*Add buttons and textfield...*/
 		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridLayout(11,2,5,5));	/*Set button layout...*/
+		buttons.setLayout(new GridLayout(12,2,5,5));	/*Set button layout...*/
 		
 		/*Calibrations file*/
 		calibrationToOpen= new JButton("Calibration file to Open");
@@ -184,7 +185,10 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel("FFT window size (minutes)"));
 		buttons.add(fftMinsCheck);
 		
-		
+		/*Result epoc length*/
+		resultEpochLength = new JTextField("60",3);
+		buttons.add(new JLabel("Result Epoch length (minutes)"));
+		buttons.add(resultEpochLength);
 		/*Run the analysis*/
 		openFile = new JButton("Indeksi2011");
 		openFile.setMnemonic(KeyEvent.VK_I);
@@ -328,6 +332,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 			writeCoordinates	= writeCoordinatesCheck.isSelected();
 			writeFFT			= writeFFTCheck.isSelected();
 			fftMins				= Integer.parseInt(fftMinsCheck.getText());
+			resultMins			= Integer.parseInt(resultEpochLength.getText());
 			try{
 				AnalysisThread analysisThread = new AnalysisThread(this);
 				Thread anaThread = new Thread(analysisThread,"analysisThread");
