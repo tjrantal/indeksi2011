@@ -46,7 +46,7 @@ import ui.*;
 
 /*implements AL antaa mahdollisuuden kayttaa eventtteja koneelta. Kayttis toteuttaa...*/
 /*extends = inherit, voi peria vain yhden*/
-public class Indeksi2011 extends JPanel implements ActionListener {	
+public class Indeksi2011 extends JPanel implements ActionListener, Runnable {	
 	public JButton calibrationToOpen;
 	public JButton fileToOpen;
 	public JButton fileToSave;
@@ -81,7 +81,10 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public boolean writeCoordinates;
 	public boolean writeFFT;
 	public boolean preventFiltering;
-	public Indeksi2011(){
+	public String[] args;
+	public Indeksi2011(String[] args){
+		this.args = args;
+		
 		selectedFile = null;
 		/*Preset path*/
 		String imageSourceString =new String("");
@@ -217,7 +220,35 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(analysisFileStatus);
 		add(buttons);
 		
-	
+		/*Allow batch processing*/
+		if (args.length >= 12){
+			readCalibrationFile(new File(args[0]));	//Windows
+			selectedFile = new File(args[1]);	//Windows
+			savePath = new String(args[2]);
+			lowPass.setText(args[3]);
+			if (args[4].equals("rat")){
+				ratCalibration.setSelected(true);
+			}
+			if (args[5].equals("half")){
+				subtractHalf.setSelected(true);
+			}
+			if (args[5].equals("one")){
+				subtractOne.setSelected(true);
+			}
+			if (args[6].equals("coordinates")){
+				writeCoordinatesCheck.setSelected(true);
+			}
+			if (args[7].equals("fft")){
+				writeFFTCheck.setSelected(true);
+			}
+			if (args[8].equals("prevent")){
+				doFilteringCheck.setSelected(true);
+			}
+			fftMinsCheck.setText(args[9]);
+			resultEpochLength.setText(args[10]);
+			activityMultiplierText.setText(args[11]);
+			activityMultiplier  = Double.parseDouble(activityMultiplierText.getText());
+		}
 
 		
 	}
@@ -235,10 +266,10 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		return menuBar;	
 	}
 	
-	public static void initAndShowGU(){
+	public static void initAndShowGUI(Indeksi2011 indeksi2011, String[] args){
 		JFrame f = new JFrame("OpenWDQ");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Indeksi2011 indeksi2011 = new Indeksi2011();
+		//Indeksi2011 indeksi2011 = new Indeksi2011();
 		JComponent newContentPane = indeksi2011;
 		newContentPane.setOpaque(true); //content panes must be opaque
 		f.setContentPane(newContentPane);
@@ -380,14 +411,25 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 			br.close();
 		} catch (Exception err){System.err.println("Error: "+err.getMessage());}
 	}
-	
+	public void run(){
+		for (int i = 0;i<args.length;++i){
+			System.out.println(args[i]);
+		}
+		initAndShowGUI(this,args);
+	}
 	public static void main(String[] args){
+		javax.swing.SwingUtilities.invokeLater((Runnable) (new Indeksi2011(args)));
+		/*
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run(){
-				initAndShowGU();
+				for (int i = 0;i<args.length;++i){
+					System.out.println(args[i]);
+				}
+				initAndShowGUI(args);
 			}
 		}
 		);
+		*/
 	}
 }
 
