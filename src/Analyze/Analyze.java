@@ -48,11 +48,13 @@ public class Analyze{
 			mainProgram.status.setText(new String("Started analyzing "+(i+1)+" out of "+animalsInFile));
 			Vector<double[]> grfData = new Vector<double[]>();	//Use this to store the data for this animal. Needs to be cleared for the next...
 			for (int j = 0; j<4;++j){	/*Get filtered data for the particular animal*/
-				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText()),mainProgram.subtract,mainProgram.writeFFT));
+				grfData.add(scaleFilterData(dataIn,i,j,animalsInFile,channelsPerAnimal,Double.valueOf(mainProgram.lowPass.getText()),mainProgram.subtract,mainProgram.writeFFT,mainProgram.preventFiltering));
 			}
 			mainProgram.status.setText(new String("Scaled &  filtered "+(i+1)+" out of "+animalsInFile));
 			/*Do the actual analysis...*/
+			System.out.println("Calculate Index");
 			calculateIndex(grfData,Double.valueOf(calibrations[2+i]),1.0/dataIn.samplingInterval,saveName,dataIn.fileName,i,dataIn.measurementInit,dataIn.measurementStop,mainProgram);
+			System.out.println("Calculate Index Done");
 		}
 	}
 	
@@ -121,6 +123,7 @@ public class Analyze{
 		
 		/*Index analysis*/
 		BufferedWriter writerTemp = null;
+		System.out.println("Analyysi alkaa");
 		try{
 			if (mainProgram.writeCoordinates){
 				writerTemp = new BufferedWriter(new FileWriter(saveName+"Coords_"+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
@@ -151,6 +154,7 @@ public class Analyze{
 				aksOld = aks;
 				yyOld = yy;
 				++linenum;
+				//System.out.print(linenum+" of "+grfData.get(0).length+"\r");
 			}
 			if (mainProgram.writeCoordinates){
 				writerTemp.close();
@@ -160,14 +164,16 @@ public class Analyze{
 		/*Calculate and print out results*/
 		/*Get minimum index to use as a activity threshold*/
 		double epochLength = 10.0;
+		System.out.println("Get threshold");
 		int minIndex = minEpochIndex(siirtymat,samplingRate, epochLength);
 		double matka = 0.0;
 
 		/*Calculate threshold values*/
+		System.out.println("Thresholds");
 		for (int j = minIndex; j <minIndex+((int) (epochLength*samplingRate*60.0));++j){
 			matka+= siirtymat[j];
 		}
-		double matkaThreshold = 2.0*matka/(epochLength*samplingRate*60.0); /*Use 1.1 times mean difference as activity threshold*/
+		double matkaThreshold = mainProgram.activityMultiplier*matka/(epochLength*samplingRate*60.0); /*Use 1.1 times mean difference as activity threshold*/
 		
 		/*Calculate distance*/
 		int laskuri =0;
@@ -179,6 +185,7 @@ public class Analyze{
 		Vector<Double> matkat = new Vector<Double>();
 		Vector<Double> nopeudet = new Vector<Double>();
 		Vector<Double> aktiivisuusAika = new Vector<Double>();
+		System.out.println("siirtymat");
 		for (int i = 0;i<datapisteita-1;i++){
 			matka += siirtymat[i];
 			
@@ -215,14 +222,15 @@ public class Analyze{
 		Vector<Double> indeksit = new Vector<Double>();
 		Vector<Double> indeksitSekunneittain = new Vector<Double>();
 		laskuri =0;
+		System.out.println("index");
 		while (kohta < datapisteita-(int) samplingRate-1){
 			vali = 0;
 			for (int i = 0;i<(int) samplingRate;i++){
 				vali += diffi[(int) kohta];
-				kohta++;
+				++kohta;
 			}
 			aind += vali/samplingRate;
-			indeksitSekunneittain.add(vali);
+			indeksitSekunneittain.add(vali/samplingRate);
 			++laskuri;
 			if (laskuri == mainProgram.resultMins*60){
 				indeksit.add(aind);
@@ -238,25 +246,35 @@ public class Analyze{
 		
 		/*Lasketaan indeksistä aktiivisuusaika*/
 		int minIndIndex = minEpochIndex(indeksitSekunneittain, epochLength);
+		System.out.println("indexAika "+minIndIndex);
 		double indeksi = 0.0;
 		/*Calculate threshold values*/
-		for (int j = minIndex; j <minIndex+((int) (epochLength*60.0));++j){
-			indeksi+= indeksitSekunneittain.get(j);
+		for (int j = minIndIndex; j <minIndIndex+((int) (epochLength*60.0))-1;++j){
+			if (j > indeksitSekunneittain.size()){
+				System.out.println("larger "+j+" "+indeksitSekunneittain.size());
+				break;
+			}else{
+				indeksi+= indeksitSekunneittain.get(j);
+				//System.out.println("indeksi "+j+" "+indeksitSekunneittain.get(j));
+			}
 		}
-		double indexThreshold = 2.0*indeksi/(epochLength*60.0); /*Use 1.1 times mean difference as activity threshold*/
+		double indexThreshold = mainProgram.activityMultiplier*indeksi/(epochLength*60.0); /*Use 1.1 times mean difference as activity threshold*/
 		/*Analyze index activity time and mean index during activity*/
 		Vector<Double> indeksitAktiivisuus = new Vector<Double>();
 		Vector<Double> indeksitAktiivisuusIndex = new Vector<Double>();
 		laskuri =0;
 		aind = 0;
 		double aTime = 0;
+		System.out.println("indexAktiivisuus "+indexThreshold);
+		kohta = 0;
 		while (kohta < indeksitSekunneittain.size()){
 			if (indeksitSekunneittain.get((int) kohta) > indexThreshold){
 				aind += indeksitSekunneittain.get((int) kohta);
 				aTime+=1;
 			}
 			++laskuri;
-			if (laskuri == mainProgram.resultMins*60){
+			++kohta;
+			if (laskuri == mainProgram.resultMins*60.0){
 				indeksitAktiivisuusIndex.add(aind);
 				indeksitAktiivisuus.add(aTime/60.0);
 				aind = 0;
@@ -271,6 +289,7 @@ public class Analyze{
 		
 		/*Print results*/
 		BufferedWriter writer;
+		System.out.println("Sizes "+matkat.size()+" "+indeksit.size()+" "+nopeudet.size()+" "+aktiivisuusAika.size()+" "+indeksitAktiivisuusIndex.size()+" "+indeksitAktiivisuus.size());
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
 			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\n");
@@ -280,7 +299,7 @@ public class Analyze{
 				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\t"+indeksitAktiivisuusIndex.get(i)+"\t"+indeksitAktiivisuus.get(i)+"\n");
 			}
 			writer.close();
-		}catch(Exception err){}
+		}catch(Exception err){System.out.println("Couldn't print fileResults");}
 		/*For debugging... print total sums out...*/
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+"SUM_ALL_ANIMALS.xls",true));	//Append to saveName file
@@ -299,7 +318,8 @@ public class Analyze{
 		double sum = 0;
 		int minIndex = 0;
 		double minSum = Double.POSITIVE_INFINITY;
-		for (int i = 0; i<siirtymat.length-((int) (epochLength*samplingRate*60.0)) ; ++i){
+		System.out.println("SiirtymatMin");
+		for (int i = 0; i<siirtymat.length-((int) (epochLength*samplingRate*60.0)-1) ; i +=samplingRate*30.0){
 			sum = 0;
 			for (int j = 0; j <((int) (epochLength*samplingRate*60.0));++j){
 				sum+= siirtymat[i+j];
@@ -308,7 +328,10 @@ public class Analyze{
 				minSum = sum;
 				minIndex = i;
 			}
+			//System.out.print("SiirtymatMin "+i+" of "+(siirtymat.length-((int) (epochLength*samplingRate*60.0))) +"\r");
 		}
+		//System.out.print("\n");
+		System.out.println("SiirtymatMinDone");
 		return minIndex;
 	}
 	
@@ -320,7 +343,8 @@ public class Analyze{
 		double sum = 0;
 		int minIndex = 0;
 		double minSum = Double.POSITIVE_INFINITY;
-		for (int i = 0; i<indeksit.size()-((int) (epochLength*60.0)) ; ++i){
+		System.out.println("IndeksitMin");
+		for (int i = 0; i<(indeksit.size()-((int) (epochLength*60.0))-1) ; i+=30){
 			sum = 0;
 			for (int j = 0; j <((int) (epochLength*60.0));++j){
 				sum+= indeksit.get(i+j);
@@ -329,11 +353,13 @@ public class Analyze{
 				minSum = sum;
 				minIndex = i;
 			}
+			//System.out.print("IndeksitMin "+i+" of "+(indeksit.size()-((int) (epochLength*60.0)))+"\r");
 		}
+		System.out.println("IndeksitMinDone");
 		return minIndex;
 	}
 	
-	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile,int channelsPerAnimal, double lowPassFrequency,double[] subtract, boolean writeFFT){
+	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile,int channelsPerAnimal, double lowPassFrequency,double[] subtract, boolean writeFFT,boolean preventFiltering){
 		double[] scaledFiltered = new double[(int)data.dataAmount/(2*data.channelNo)]; /*Reserve Memory for one channel*/
 		/*Read data from file to save memomry*/
 		int headerRead;
@@ -350,11 +376,13 @@ public class Analyze{
 		} catch (Exception err) {System.out.println("Can't read "+err.getMessage());}
 
 		/*Filter the data...*/
-		if (!writeFFT){ //Don't filter, if writing FFT has been requested...
+		if (writeFFT || preventFiltering){ //Don't filter, if writing FFT has been requested...
+			System.out.println("No filtering");
+		}else{
 			ButterworthCoefficients butterworthCoefficients = new  ButterworthCoefficients();
 			String[] args = {"Bu","Lp","o","2","a",Double.toString(lowPassFrequency*data.samplingInterval)};
 			butterworthCoefficients.butter(args);	/*Get butterworth coeffiecients*/
-			System.out.println("Coefficients obtained");
+			System.out.println("Filtering, Coefficients obtained");
 			scaledFiltered = butterworthCoefficients.filtfilt(scaledFiltered);
 		}
 		return scaledFiltered;

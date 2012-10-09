@@ -69,15 +69,18 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 	public JRadioButton subtractOne;
 	public JCheckBox writeCoordinatesCheck;
 	public JCheckBox writeFFTCheck;
+	public JCheckBox doFilteringCheck;
 	public JTextField fftMinsCheck;
 	public JTextField resultEpochLength;
+	public JTextField activityMultiplierText;
 	public int fftMins;
 	public int resultMins;	
-	
+	public double activityMultiplier;
 	public double[] calibration;
 	public double[] subtract;
 	public boolean writeCoordinates;
 	public boolean writeFFT;
+	public boolean preventFiltering;
 	public Indeksi2011(){
 		selectedFile = null;
 		/*Preset path*/
@@ -98,7 +101,7 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		savePath = null;
 		/*Add buttons and textfield...*/
 		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridLayout(12,2,5,5));	/*Set button layout...*/
+		buttons.setLayout(new GridLayout(14,2,5,5));	/*Set button layout...*/
 		
 		/*Calibrations file*/
 		calibrationToOpen= new JButton("Calibration file to Open");
@@ -178,8 +181,11 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		buttons.add(new JLabel("Print FFT (turns of filtering...)"));
 		buttons.add(writeFFTCheck);
 		
-		
-		
+		/*Prevent filtering*/
+		doFilteringCheck = new JCheckBox("Ticked = yes N.B. Filtering gets turned off!",false);
+		doFilteringCheck.setMnemonic(KeyEvent.VK_P);
+		buttons.add(new JLabel("Prevent filtering"));
+		buttons.add(doFilteringCheck);
 		/*FFT length*/
 		fftMinsCheck = new JTextField("20",3);
 		buttons.add(new JLabel("FFT window size (minutes)"));
@@ -189,6 +195,12 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 		resultEpochLength = new JTextField("60",3);
 		buttons.add(new JLabel("Result Epoch length (minutes)"));
 		buttons.add(resultEpochLength);
+		
+		/*ActivityMultiplier*/
+		activityMultiplierText = new JTextField("2.0",3);
+		buttons.add(new JLabel("Activity level multiplier for activityTime analyses"));
+		buttons.add(activityMultiplierText);
+		
 		/*Run the analysis*/
 		openFile = new JButton("Indeksi2011");
 		openFile.setMnemonic(KeyEvent.VK_I);
@@ -331,8 +343,10 @@ public class Indeksi2011 extends JPanel implements ActionListener {
 			/*Write coordinates*/
 			writeCoordinates	= writeCoordinatesCheck.isSelected();
 			writeFFT			= writeFFTCheck.isSelected();
+			preventFiltering	= doFilteringCheck.isSelected();
 			fftMins				= Integer.parseInt(fftMinsCheck.getText());
 			resultMins			= Integer.parseInt(resultEpochLength.getText());
+			activityMultiplier  = Double.parseDouble(activityMultiplierText.getText());
 			try{
 				AnalysisThread analysisThread = new AnalysisThread(this);
 				Thread anaThread = new Thread(analysisThread,"analysisThread");
