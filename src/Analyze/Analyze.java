@@ -207,7 +207,7 @@ public class Analyze{
 				aktLas = 0;
 			}			
 		}	
-		if (matka != 0.0){
+		if (laskuri != 0.0){
 			matkat.add(matka);
 			nopeudet.add(nopeus/((double)aktLas));
 			aktiivisuusAika.add(aktiivisuus/60.0);
@@ -239,7 +239,7 @@ public class Analyze{
 				laskuri = 0;
 			}
 		}
-		if (aind != 0.0){
+		if (laskuri != 0.0){
 			indeksit.add(aind);
 			aind2+=aind;
 		}
@@ -282,14 +282,14 @@ public class Analyze{
 				laskuri = 0;
 			}
 		}
-		if (aind != 0.0){
+		if (laskuri != 0){
 			indeksitAktiivisuusIndex.add(aind);
 			indeksitAktiivisuus.add(aTime/60.0);
 		}
 		
 		/*Print results*/
 		BufferedWriter writer;
-		System.out.println("Sizes "+matkat.size()+" "+indeksit.size()+" "+nopeudet.size()+" "+aktiivisuusAika.size()+" "+indeksitAktiivisuusIndex.size()+" "+indeksitAktiivisuus.size());
+		System.out.println("Sizes m "+matkat.size()+" i "+indeksit.size()+" n "+nopeudet.size()+" a "+aktiivisuusAika.size()+" iai "+indeksitAktiivisuusIndex.size()+" ia "+indeksitAktiivisuus.size());
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
 			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\n");
