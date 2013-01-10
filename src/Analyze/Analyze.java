@@ -292,8 +292,8 @@ public class Analyze{
 		System.out.println("Sizes m "+matkat.size()+" i "+indeksit.size()+" n "+nopeudet.size()+" a "+aktiivisuusAika.size()+" iai "+indeksitAktiivisuusIndex.size()+" ia "+indeksitAktiivisuus.size());
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\n");
-			writer.write(fileName+"\t"+mainProgram.resultMins+"\t"+animalNo+"\t"+start+"\t"+stop+"\n");
+			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\tmatkaThreshold\tindexThreshold\n");
+			writer.write(fileName+"\t"+mainProgram.resultMins+"\t"+animalNo+"\t"+start+"\t"+stop+"\t"+matkaThreshold+"\t"+indexThreshold+"\n");
 			writer.write("EpochIndex\tDistance [mm]\tIndex\tVelocity [mm/s]\tActivityTime [min]\tMeanIndexDuringIndAct\tActivityTimeFromIndex [min]\n");
 			for (int i =0; i<matkat.size();++i){
 				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\t"+indeksitAktiivisuusIndex.get(i)+"\t"+indeksitAktiivisuus.get(i)+"\n");
