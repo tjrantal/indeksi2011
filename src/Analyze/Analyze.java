@@ -192,7 +192,7 @@ public class Analyze{
 			if (siirtymat[i] > matkaThreshold){
 				++aktLas;
 				aktiivisuus+=1.0/samplingRate;
-				nopeus += siirtymat[i]/samplingRate;
+				nopeus += siirtymat[i]*samplingRate;
 			}							
 			++laskuri;
 			if (laskuri == (int) (samplingRate*((double) mainProgram.resultMins)*60.0)){
