@@ -32,7 +32,7 @@
 
  
   <target name="javacompile" depends="init" description="Compile Java source" >
-    <javac source="1.5" srcdir="${javasrc}" destdir="${classes}" nowarn="on">
+    <javac source="1.5" target="1.5" srcdir="${javasrc}" destdir="${classes}" nowarn="on">
 		<!--Include jmf classpath & jars here...
 		<classpath> 
 			<pathelement path="${classes}"/>

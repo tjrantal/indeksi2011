@@ -68,9 +68,12 @@ public class Analyze{
 		double acc=0;
 		double accOld=0;
 		double sum=0;
+		double massLossCorrectionCoefficient = 0;
 		double[] corners = new double[4];
 		double[] diffi = new double[grfData.get(0).length];
 		double[] siirtymat = new double[grfData.get(0).length];
+		double[] correctionCoefficients = new double[grfData.get(0).length];
+		double[] grfInKg = new double[grfData.get(0).length];
 		
 		/*FFT analysis*/
 		//System.out.println("Write FFT "+writeFFT);
@@ -140,11 +143,13 @@ public class Analyze{
 					yy =(corners[2]+corners[3])/(sum)*mainProgram.calibration[1]; 
 				}
 				acc = sum*voltsToKilos/mass;
-				
+				massLossCorrectionCoefficient = Math.exp(-3.05566595669206*(mass-sum*voltsToKilos)/mass); //-3.05566595669206 calculated based on an exponential fit from calibration with known weight loss and distance
 				++datapisteita;
 				if (datapisteita > 1){
-					diffi[datapisteita-1] = Math.abs(acc-accOld);
-					siirtymat[datapisteita-1] =  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));
+					correctionCoefficients[datapisteita-1]	= massLossCorrectionCoefficient;
+					grfInKg[datapisteita-1]					= sum*voltsToKilos;
+					diffi[datapisteita-1]					= Math.abs(acc-accOld);
+					siirtymat[datapisteita-1]				=  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0))*massLossCorrectionCoefficient;	//weigh the movement with lost mass
 				}
 				
 				if (mainProgram.writeCoordinates){
@@ -163,7 +168,7 @@ public class Analyze{
 		
 		/*Calculate and print out results*/
 		/*Get minimum index to use as a activity threshold*/
-		double epochLength = 10.0;
+		double epochLength = 5.0;
 		System.out.println("Get threshold");
 		int minIndex = minEpochIndex(siirtymat,samplingRate, epochLength);
 		double matka = 0.0;
@@ -180,15 +185,20 @@ public class Analyze{
 		int aktLas = 0;
 		matka = 0.0;
 		double matka2 = 0.0;
+		double coeff = 0.0;
+		double grfKg = 0.0;
 		double nopeus = 0.0;
 		double aktiivisuus = 0.0;
 		Vector<Double> matkat = new Vector<Double>();
+		Vector<Double> correctionCoeffs = new Vector<Double>();
+		Vector<Double> grfKgs = new Vector<Double>();
 		Vector<Double> nopeudet = new Vector<Double>();
 		Vector<Double> aktiivisuusAika = new Vector<Double>();
 		System.out.println("siirtymat");
 		for (int i = 0;i<datapisteita-1;i++){
-			matka += siirtymat[i];
-			
+			matka	+= siirtymat[i];
+			coeff	+= correctionCoefficients[i];
+			grfKg	+= grfInKg[i];
 			if (siirtymat[i] > matkaThreshold){
 				++aktLas;
 				aktiivisuus+=1.0/samplingRate;
@@ -199,18 +209,24 @@ public class Analyze{
 				matkat.add(matka);
 				nopeudet.add(nopeus/((double)aktLas));
 				aktiivisuusAika.add(aktiivisuus/60.0);
+				correctionCoeffs.add(coeff/(double)laskuri);
+				grfKgs.add(grfKg/(double)laskuri);
 				matka2+=matka;
 				nopeus = 0.0;
 				matka =0.0;
 				aktiivisuus = 0;
 				laskuri =0;
 				aktLas = 0;
+				coeff = 0;
+				grfKg = 0;
 			}			
 		}	
 		if (laskuri != 0.0){
 			matkat.add(matka);
 			nopeudet.add(nopeus/((double)aktLas));
 			aktiivisuusAika.add(aktiivisuus/60.0);
+			correctionCoeffs.add(coeff/(double)laskuri);
+			grfKgs.add(grfKg/(double)laskuri);
 			matka2+=matka;
 		}		
 		/*Calculate index*/
@@ -294,9 +310,9 @@ public class Analyze{
 			writer = new BufferedWriter(new FileWriter(saveName+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
 			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\tmatkaThreshold\tindexThreshold\n");
 			writer.write(fileName+"\t"+mainProgram.resultMins+"\t"+animalNo+"\t"+start+"\t"+stop+"\t"+matkaThreshold+"\t"+indexThreshold+"\n");
-			writer.write("EpochIndex\tDistance [mm]\tIndex\tVelocity [mm/s]\tActivityTime [min]\tMeanIndexDuringIndAct\tActivityTimeFromIndex [min]\n");
+			writer.write("EpochIndex\tDistance [mm]\tIndex\tVelocity [mm/s]\tActivityTime [min]\tMeanIndexDuringIndAct\tActivityTimeFromIndex [min]\tcorrectionCoefficients [coefficient]\tgrfKg [kg]\n");
 			for (int i =0; i<matkat.size();++i){
-				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\t"+indeksitAktiivisuusIndex.get(i)+"\t"+indeksitAktiivisuus.get(i)+"\n");
+				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\t"+indeksitAktiivisuusIndex.get(i)+"\t"+indeksitAktiivisuus.get(i)+"\t"+correctionCoeffs.get(i)+"\t"+grfKgs.get(i)+"\n");
 			}
 			writer.close();
 		}catch(Exception err){System.out.println("Couldn't print fileResults");}
