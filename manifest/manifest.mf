@@ -3,5 +3,5 @@ Ant-Version: Apache Ant 1.8.4
 Created-By: 1.7.0_21-b11 (Oracle Corporation)
 Built-By: tjrantal
 Main-Class: ui.Indeksi2011
-Implementation-Version: 1.68
+Implementation-Version: 1.69
 

@@ -171,6 +171,8 @@ public class Analyze{
 		double epochLength = 5.0;
 		System.out.println("Get threshold");
 		int minIndex = minEpochIndex(siirtymat,samplingRate, epochLength);
+		double[][] minEpochValues = minEpochs(siirtymat, 1.0);	//Look for minimal one min values in 60 min epochs
+		double[] minEpochFitCoefficients = polynomialFit(minEpochValues,2);
 		double matka = 0.0;
 
 		/*Calculate threshold values*/
@@ -327,6 +329,17 @@ public class Analyze{
 	}
 	
 	/*
+		fit nth order polynomial on fitArray (^2 = 2nd order)
+		fitArray[0][] X-values
+		fitArray[1][] Y-values
+	*/
+	double[] polynomialFit(double[][] fitArray, int nthOrder){
+		double[] coefficients = new double[nthOrder+1];
+		
+		return coefficients;
+	}
+	
+	/*
 		
 		epochLength = epochLength in minutes
 	*/
@@ -381,20 +394,20 @@ public class Analyze{
 	returns minimum values for each 60 min epochs and the corresponding indices
 	
 	*/
-	private double[][] minEpochs(Vector<Double> indeksit, double epochLength){
+	private double[][] minEpochs(double[] indeksit, double epochLength){
 		int hourEpoch = 60*60;
-		double[][] minEpochArray = new double[2][(int) Math.floor(indeksit.size()/hourEpoch)];
+		double[][] minEpochArray = new double[2][(int) Math.floor(indeksit.length/hourEpoch)];
 		double sum = 0;
 		int minIndex = 0;
 		double minSum = Double.POSITIVE_INFINITY;
 		System.out.println("minEpochs");
 		int i = 0;
-		while (i<(indeksit.size()-((int) (60.0*60.0))-1)){
+		while (i<(indeksit.length-((int) (60.0*60.0))-1)){
 			minSum = Double.POSITIVE_INFINITY;
 			for (int j = i; j <i+60*60.0-1-((int)epochLength*60.0);++j){
 				sum = 0;
 				for (int k = i;k<+((int)epochLength*60.0)-1;++k){
-					sum+= indeksit.get(k);
+					sum+= indeksit[k];
 				}
 				if (sum < minSum){
 					minSum = sum;
