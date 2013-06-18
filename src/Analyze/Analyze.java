@@ -149,7 +149,7 @@ public class Analyze{
 					correctionCoefficients[datapisteita-1]	= massLossCorrectionCoefficient;
 					grfInKg[datapisteita-1]					= sum*voltsToKilos;
 					diffi[datapisteita-1]					= Math.abs(acc-accOld);
-					siirtymat[datapisteita-1]				=  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0))*massLossCorrectionCoefficient;	//weigh the movement with lost mass
+					siirtymat[datapisteita-1]				=  Math.sqrt(Math.pow(aks-aksOld,2.0)+Math.pow(yy-yyOld,2.0));//Removed mass compensation *massLossCorrectionCoefficient;	//weigh the movement with lost mass
 				}
 				
 				if (mainProgram.writeCoordinates){
