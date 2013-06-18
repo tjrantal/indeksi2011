@@ -381,7 +381,7 @@ public class Analyze{
 	returns minimum values for each 60 min epochs and the corresponding indices
 	
 	*/
-	private double[] minEpochs(Vector<Double> indeksit, double epochLength){
+	private double[][] minEpochs(Vector<Double> indeksit, double epochLength){
 		int hourEpoch = 60*60;
 		double[][] minEpochArray = new double[2][(int) Math.floor(indeksit.size()/hourEpoch)];
 		double sum = 0;
@@ -398,7 +398,7 @@ public class Analyze{
 				}
 				if (sum < minSum){
 					minSum = sum;
-					minIndex = k;
+					minIndex = j;
 				}
 			}
 			minEpochArray[0][i] = minIndex;
