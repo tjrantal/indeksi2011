@@ -375,6 +375,41 @@ public class Analyze{
 		return minIndex;
 	}
 	
+	/*
+	Goes through vector indeksit in 60 min epochs. 
+	Looks for the minimum epochLength stretch in each 60 min epoch.
+	returns minimum values for each 60 min epochs and the corresponding indices
+	
+	*/
+	private double[] minEpochs(Vector<Double> indeksit, double epochLength){
+		int hourEpoch = 60*60;
+		double[][] minEpochArray = new double[2][(int) Math.floor(indeksit.size()/hourEpoch)];
+		double sum = 0;
+		int minIndex = 0;
+		double minSum = Double.POSITIVE_INFINITY;
+		System.out.println("minEpochs");
+		int i = 0;
+		while (i<(indeksit.size()-((int) (60.0*60.0))-1)){
+			minSum = Double.POSITIVE_INFINITY;
+			for (int j = i; j <i+60*60.0-1-((int)epochLength*60.0);++j){
+				sum = 0;
+				for (int k = i;k<+((int)epochLength*60.0)-1;++k){
+					sum+= indeksit.get(k);
+				}
+				if (sum < minSum){
+					minSum = sum;
+					minIndex = k;
+				}
+			}
+			minEpochArray[0][i] = minIndex;
+			minEpochArray[1][i] = minSum;
+			i+=60*60;
+			//System.out.print("IndeksitMin "+i+" of "+(indeksit.size()-((int) (epochLength*60.0)))+"\r");
+		}
+		System.out.println("minEpochs Done");
+		return minEpochArray;
+	}	
+	
 	double[] scaleFilterData(ReadWDQ data, int animal, int channel, int animalsInFile,int channelsPerAnimal, double lowPassFrequency,double[] subtract, boolean writeFFT,boolean preventFiltering){
 		double[] scaledFiltered = new double[(int)data.dataAmount/(2*data.channelNo)]; /*Reserve Memory for one channel*/
 		/*Read data from file to save memomry*/
