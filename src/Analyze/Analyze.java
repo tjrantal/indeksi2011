@@ -172,7 +172,7 @@ public class Analyze{
 		double epochLength = 5.0;
 		System.out.println("Get threshold");
 		int minIndex = minEpochIndex(siirtymat,samplingRate, epochLength);
-		double[][] minEpochValues = minEpochs(siirtymat, 1.0);	//Look for minimal one min values in 60 min epochs
+		double[][] minEpochValues = minEpochs(siirtymat,samplingRate, 1.0);	//Look for minimal one min values in 60 min epochs
 		double[] minEpochFitCoefficients = PolynomialFit.polynomialFit(minEpochValues,2);
 		double matka = 0.0;
 
@@ -188,11 +188,13 @@ public class Analyze{
 		int aktLas = 0;
 		matka = 0.0;
 		double matka2 = 0.0;
+		double matkaFit = 0.0;
 		double coeff = 0.0;
 		double grfKg = 0.0;
 		double nopeus = 0.0;
 		double aktiivisuus = 0.0;
 		Vector<Double> matkat = new Vector<Double>();
+		Vector<Double> matkatFit = new Vector<Double>();
 		Vector<Double> correctionCoeffs = new Vector<Double>();
 		Vector<Double> grfKgs = new Vector<Double>();
 		Vector<Double> nopeudet = new Vector<Double>();
@@ -200,6 +202,7 @@ public class Analyze{
 		System.out.println("siirtymat");
 		for (int i = 0;i<datapisteita-1;i++){
 			matka	+= siirtymat[i];
+			matkaFit += (minEpochFitCoefficients[0]/(minEpochFitCoefficients[0]+minEpochFitCoefficients[1]*(double)i+minEpochFitCoefficients[2]*Math.pow((double)i,2.0)))*siirtymat[i];
 			coeff	+= correctionCoefficients[i];
 			grfKg	+= grfInKg[i];
 			if (siirtymat[i] > matkaThreshold){
@@ -210,6 +213,7 @@ public class Analyze{
 			++laskuri;
 			if (laskuri == (int) (samplingRate*((double) mainProgram.resultMins)*60.0)){
 				matkat.add(matka);
+				matkatFit.add(matkaFit);
 				nopeudet.add(nopeus/((double)aktLas));
 				aktiivisuusAika.add(aktiivisuus/60.0);
 				correctionCoeffs.add(coeff/(double)laskuri);
@@ -217,6 +221,7 @@ public class Analyze{
 				matka2+=matka;
 				nopeus = 0.0;
 				matka =0.0;
+				matkaFit = 0.0;
 				aktiivisuus = 0;
 				laskuri =0;
 				aktLas = 0;
@@ -226,6 +231,7 @@ public class Analyze{
 		}	
 		if (laskuri != 0.0){
 			matkat.add(matka);
+			matkatFit.add(matkaFit);
 			nopeudet.add(nopeus/((double)aktLas));
 			aktiivisuusAika.add(aktiivisuus/60.0);
 			correctionCoeffs.add(coeff/(double)laskuri);
@@ -311,11 +317,11 @@ public class Analyze{
 		System.out.println("Sizes m "+matkat.size()+" i "+indeksit.size()+" n "+nopeudet.size()+" a "+aktiivisuusAika.size()+" iai "+indeksitAktiivisuusIndex.size()+" ia "+indeksitAktiivisuus.size());
 		try{
 			writer = new BufferedWriter(new FileWriter(saveName+fileName.substring(0,fileName.length()-4)+"_"+Integer.toString(animalNo)+".xls",false));	//Overwrite saveName file
-			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\tmatkaThreshold\tindexThreshold\n");
-			writer.write(fileName+"\t"+mainProgram.resultMins+"\t"+animalNo+"\t"+start+"\t"+stop+"\t"+matkaThreshold+"\t"+indexThreshold+"\n");
-			writer.write("EpochIndex\tDistance [mm]\tIndex\tVelocity [mm/s]\tActivityTime [min]\tMeanIndexDuringIndAct\tActivityTimeFromIndex [min]\tcorrectionCoefficients [coefficient]\tgrfKg [kg]\n");
+			writer.write("FileName\tEpochLength [min]\tMouseNo\tStartTime\tStopTime\tmatkaThreshold\tindexThreshold\tmatkaCoeff[0]\tmatkaCoeff[1]\tmatkaCoeff[2]\n");
+			writer.write(fileName+"\t"+mainProgram.resultMins+"\t"+animalNo+"\t"+start+"\t"+stop+"\t"+matkaThreshold+"\t"+indexThreshold+"\t"+minEpochFitCoefficients[0]+"\t"+minEpochFitCoefficients[1]+"\t"+minEpochFitCoefficients[2]+"\n");
+			writer.write("EpochIndex\tDistance [mm]\tIndex\tVelocity [mm/s]\tActivityTime [min]\tMeanIndexDuringIndAct\tActivityTimeFromIndex [min]\tcorrectionCoefficients [coefficient]\tgrfKg [kg]\tPolynomialDistance [mm]\n");
 			for (int i =0; i<matkat.size();++i){
-				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\t"+indeksitAktiivisuusIndex.get(i)+"\t"+indeksitAktiivisuus.get(i)+"\t"+correctionCoeffs.get(i)+"\t"+grfKgs.get(i)+"\n");
+				writer.write(i+"\t"+matkat.get(i)+"\t"+indeksit.get(i)+"\t"+nopeudet.get(i)+"\t"+aktiivisuusAika.get(i)+"\t"+indeksitAktiivisuusIndex.get(i)+"\t"+indeksitAktiivisuus.get(i)+"\t"+correctionCoeffs.get(i)+"\t"+grfKgs.get(i)+"\t"+matkatFit.get(i)+"\n");
 			}
 			writer.close();
 		}catch(Exception err){System.out.println("Couldn't print fileResults");}
@@ -386,19 +392,20 @@ public class Analyze{
 	returns minimum values for each 60 min epochs and the corresponding indices
 	
 	*/
-	private double[][] minEpochs(double[] indeksit, double epochLength){
-		int hourEpoch = 60*60;
+	private double[][] minEpochs(double[] indeksit,double samplingRate, double epochLength){
+		int hourEpoch = (int) (60.0*60.0*samplingRate);
 		double[][] minEpochArray = new double[2][(int) Math.floor(indeksit.length/hourEpoch)];
 		double sum = 0;
 		int minIndex = 0;
 		double minSum = Double.POSITIVE_INFINITY;
 		System.out.println("minEpochs");
 		int i = 0;
-		while (i<(indeksit.length-((int) (60.0*60.0))-1)){
+		int hourIndex = 0;
+		while (i<(indeksit.length-((int) (60.0*60.0*samplingRate))-1)){
 			minSum = Double.POSITIVE_INFINITY;
-			for (int j = i; j <i+60*60.0-1-((int)epochLength*60.0);++j){
+			for (int j = i; j <i+60*60*samplingRate-1-((int)epochLength*samplingRate*60.0);++j){
 				sum = 0;
-				for (int k = i;k<+((int)epochLength*60.0)-1;++k){
+				for (int k = j;k<j+((int)epochLength*samplingRate*60.0)-1;++k){
 					sum+= indeksit[k];
 				}
 				if (sum < minSum){
@@ -406,8 +413,10 @@ public class Analyze{
 					minIndex = j;
 				}
 			}
-			minEpochArray[0][i] = minIndex;
-			minEpochArray[1][i] = minSum;
+			System.out.println("Hour "+Integer.toString(hourIndex));
+			minEpochArray[0][hourIndex] = minIndex;	
+			minEpochArray[1][hourIndex] = minSum;
+			++hourIndex;
 			i+=60*60;
 			//System.out.print("IndeksitMin "+i+" of "+(indeksit.size()-((int) (epochLength*60.0)))+"\r");
 		}
