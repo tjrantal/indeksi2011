@@ -4,8 +4,9 @@ Compile with ant (i.e. just "ant" in the root directory, provided that JAVA_HOME
 Check compile.bat to get started
 
 Use
-1. Klikkaa Calibartion file to Open (tai alt-c) -> valitse testi.csv ja paina OK
-2. Klikkaa WDQ file to Open (tai alt-w) -> valitse 080911_2hiirta.WDQ tai 290811_3hiirta.WDQ ja paina OK
-3. Klikkaa Result save Path (tai alt-r) -> valitse polku, jonne haluat tulostiedostot ja paina OK
-4. Klikkaa Indeksi2011 (tai alt-i) ja odota. Nappien pitaisi himmentya ja alimmalla rivilla olevan tekstin pitaisi paivittya ja kertoa mita tapahtuu
+1. Click Calibration file to Open (or alt-c) -> select the file with mouse weights (testi.csv contains a sample) and click OK
+2. Click the WDQ file to Open (or alt-w) -> select a .WDQ file that is found from the .csv file -> click OK
+3. Click Result save Path (or alt-r) -> choose the path for the result files -> click OK (n.b. any pre-existing files will be overwritten!).
+4. Click Indeksi2011 (or alt-i) to start the analysis, and wait for the analysis to complete. The push buttons should get disabled, and the information bar at the bottom of the screen should update according to the analysis progress. If not, something has almost certainly gone wrong (restart the application from the command line [java -jar -Xmx950M Indeksi2011.jar], redo steps 1 through 4, and look for error messages).
 
+There are a few parameters that can be tweaked through the graphical user interface, but the analysis should run through with the defaults. 
